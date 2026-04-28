@@ -23,7 +23,8 @@ The goal is to build a stable, functional, and easy-to-maintain Inventory Manage
 To ensure stability and ease of development, we will use proven, lightweight technologies:
 - **Backend**: **Flask (Python)** - Simple, stable, and powerful.
 - **Database**: **SQLite** - Serverless, zero-config, and extremely reliable for this scale.
-- **Frontend**: **HTML5, Vanilla CSS, and JavaScript** - No complex frameworks; just clean, responsive UI using a modern CSS approach (or simple Bootstrap).
+- **Frontend**: **React** with **Vite** - Modern, reactive UI for a premium user experience.
+- **API**: **REST API** using Flask to serve the React frontend.
 - **Tooling**: 
   - **Environment**: Virtualenv for dependency isolation.
   - **Containerization**: **Docker** for consistent environments across development and "production".
@@ -40,10 +41,11 @@ To ensure stability and ease of development, we will use proven, lightweight tec
 - Define Database Schema (Products, Transactions).
 - Implement basic CRUD API for Products.
 
-### Phase 2: Inventory Logic & UI (Week 1)
-- Create the Inventory Adjustment logic (Stock-in/Stock-out).
-- Build a clean, professional Dashboard UI.
-- Implement Product listing and search.
+### Phase 2: React UI & Integration (Week 1)
+- Initialize React project with Vite.
+- Implement the premium design system (Glassmorphism).
+- Build Dashboard and Product management components.
+- Connect React frontend to Flask API.
 
 ### Phase 3: Polish & Stability (Week 2)
 - Add Low-stock alerts and visual indicators.
