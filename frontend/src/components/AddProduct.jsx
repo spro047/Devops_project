@@ -65,6 +65,7 @@ const AddProduct = ({ onSuccess, onCancel }) => {
               <input 
                 type="number" 
                 step="0.01"
+                min="0"
                 value={formData.price}
                 onChange={(e) => setFormData({...formData, price: e.target.value})}
               />
@@ -76,6 +77,7 @@ const AddProduct = ({ onSuccess, onCancel }) => {
               <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Initial Qty</label>
               <input 
                 type="number"
+                min="0"
                 value={formData.quantity}
                 onChange={(e) => setFormData({...formData, quantity: e.target.value})}
               />
@@ -84,6 +86,7 @@ const AddProduct = ({ onSuccess, onCancel }) => {
               <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Threshold</label>
               <input 
                 type="number"
+                min="1"
                 value={formData.threshold}
                 onChange={(e) => setFormData({...formData, threshold: e.target.value})}
               />

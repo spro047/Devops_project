@@ -87,6 +87,7 @@ const Dashboard = ({ data, onRefresh }) => {
                       <input 
                         type="number" 
                         placeholder="Qty" 
+                        min="1"
                         style={{ width: '70px', padding: '0.4rem' }}
                         value={adjustments[product.id]?.amount || ''}
                         onChange={(e) => updateAdj(product.id, 'amount', e.target.value)}
