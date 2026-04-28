@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Package, PlusCircle } from 'lucide-react';
+import { LayoutDashboard, Package, PlusCircle, History } from 'lucide-react';
 
 const Navbar = ({ onNavigate, currentView }) => {
   return (

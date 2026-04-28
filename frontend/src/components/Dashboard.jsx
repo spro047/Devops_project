@@ -43,12 +43,12 @@ const Dashboard = ({ data, onRefresh }) => {
       </header>
 
       <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', margin: '2rem 0' }}>
-        <StatCard title="Total Items" value={data.total_items} />
-        <StatCard title="Inventory Value" value={`$${data.total_value.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} />
+        <StatCard title="Total Items" value={data?.total_items || 0} />
+        <StatCard title="Inventory Value" value={`$${(data?.total_value || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`} />
         <StatCard 
           title="Low Stock Alerts" 
-          value={data.low_stock_count} 
-          color={data.low_stock_count > 0 ? 'var(--danger)' : 'var(--success)'} 
+          value={data?.low_stock_count || 0} 
+          color={data?.low_stock_count > 0 ? 'var(--danger)' : 'var(--success)'} 
         />
       </div>
 
@@ -68,7 +68,7 @@ const Dashboard = ({ data, onRefresh }) => {
               </tr>
             </thead>
             <tbody>
-              {data.recent_products.map(product => (
+              {data?.recent_products?.map(product => (
                 <tr key={product.id}>
                   <td><code style={{ background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px' }}>{product.sku}</code></td>
                   <td>{product.name}</td>
@@ -111,7 +111,7 @@ const Dashboard = ({ data, onRefresh }) => {
                   </td>
                 </tr>
               ))}
-              {data.recent_products.length === 0 && (
+              {(!data?.recent_products || data.recent_products.length === 0) && (
                 <tr>
                   <td colSpan="5" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
                     No products found. Start by adding one!

@@ -33,6 +33,18 @@ function App() {
       </div>
     );
 
+    if (!dashboardData && (view === 'dashboard' || view === 'default')) {
+      return (
+        <div className="container" style={{ marginTop: '5rem', textAlign: 'center' }}>
+          <div className="glass-card">
+            <h2 style={{ color: 'var(--danger)' }}>Failed to connect to backend</h2>
+            <p style={{ color: 'var(--text-muted)', margin: '1rem 0' }}>Please ensure the Flask server is running at http://localhost:5000</p>
+            <button onClick={refreshData} className="btn btn-primary">Retry Connection</button>
+          </div>
+        </div>
+      );
+    }
+
     switch (view) {
       case 'dashboard':
         return <Dashboard data={dashboardData} onRefresh={refreshData} />;
