@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<header style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: flex-end;">
+    <div>
+        <h1 style="font-size: 2.5rem; font-weight: 600;">Product <span style="color: var(--primary);">Catalog</span></h1>
+        <p style="color: var(--text-muted);">Manage your entire inventory list.</p>
+    </div>
+    <a href="{{ url_for('main.add_product') }}" class="btn-primary">Add New Product</a>
+</header>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>SKU</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Min Threshold</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td><code>{{ product.sku }}</code></td>
+                <td>{{ product.name }}</td>
+                <td>{{ product.category }}</td>
+                <td>${{ "{:,.2f}".format(product.price) }}</td>
+                <td>{{ product.quantity }}</td>
+                <td>{{ product.threshold }}</td>
+                <td>
+                    {% if product.quantity <= 0 %}
+                        <span class="badge badge-danger">Out of Stock</span>
+                    {% elif product.quantity <= product.threshold %}
+                        <span class="badge badge-warning">Low Stock</span>
+                    {% else %}
+                        <span class="badge badge-success">Healthy</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 3rem; color: var(--text-muted);">Catalog is empty.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
