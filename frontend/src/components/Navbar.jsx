@@ -35,6 +35,14 @@ const Navbar = ({ onNavigate, currentView }) => {
           </li>
           <li>
             <button 
+              onClick={() => onNavigate('activity')} 
+              style={{ background: 'none', border: 'none', color: currentView === 'activity' ? 'var(--text-main)' : 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            >
+              <History size={18} /> Activity
+            </button>
+          </li>
+          <li>
+            <button 
               onClick={() => onNavigate('add')} 
               className="btn btn-primary"
               style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}

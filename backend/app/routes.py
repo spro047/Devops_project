@@ -84,3 +84,18 @@ def adjust_inventory(product_id):
     db.session.commit()
     
     return jsonify({'message': 'Inventory adjusted!', 'new_quantity': product.quantity})
+
+@main.route('/api/transactions')
+def get_transactions():
+    transactions = Transaction.query.order_by(Transaction.timestamp.desc()).all()
+    return jsonify([
+        {
+            'id': t.id,
+            'product_name': t.product.name,
+            'sku': t.product.sku,
+            'type': t.type,
+            'quantity': t.quantity,
+            'notes': t.notes,
+            'timestamp': t.timestamp.isoformat()
+        } for t in transactions
+    ])

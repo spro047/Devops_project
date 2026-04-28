@@ -11,6 +11,7 @@ const api = axios.create({
 
 export const getDashboardData = () => api.get('/dashboard');
 export const getProducts = () => api.get('/products');
+export const getTransactions = () => api.get('/transactions');
 export const addProduct = (productData) => api.post('/product', productData);
 export const adjustInventory = (productId, adjustment) => api.post(`/inventory/adjust/${productId}`, adjustment);
 
