@@ -6,7 +6,7 @@ main = Blueprint('main', __name__)
 
 @main.route('/api/dashboard')
 def dashboard():
-    products = Product.query.all()
+    products = Product.objects.all()
     total_items = sum(p.quantity for p in products)
     total_value = sum(p.quantity * p.price for p in products)
     low_stock_items = [p for p in products if p.quantity <= p.threshold]
@@ -17,7 +17,7 @@ def dashboard():
         'low_stock_count': len(low_stock_items),
         'recent_products': [
             {
-                'id': p.id,
+                'id': str(p.id),
                 'sku': p.sku,
                 'name': p.name,
                 'category': p.category,
@@ -30,10 +30,10 @@ def dashboard():
 
 @main.route('/api/products')
 def list_products():
-    products = Product.query.all()
+    products = Product.objects.all()
     return jsonify([
         {
-            'id': p.id,
+            'id': str(p.id),
             'sku': p.sku,
             'name': p.name,
             'category': p.category,
@@ -53,19 +53,18 @@ def add_product():
     quantity = int(data.get('quantity', 0))
     threshold = int(data.get('threshold', 10))
 
-    if Product.query.filter_by(sku=sku).first():
+    if Product.objects(sku=sku).first():
         return jsonify({'error': 'SKU already exists!'}), 400
 
     new_product = Product(sku=sku, name=name, category=category, 
                           price=price, quantity=quantity, threshold=threshold)
-    db.session.add(new_product)
-    db.session.commit()
+    new_product.save()
     
     return jsonify({'message': 'Product added successfully!'}), 201
 
-@main.route('/api/inventory/adjust/<int:product_id>', methods=['POST'])
+@main.route('/api/inventory/adjust/<string:product_id>', methods=['POST'])
 def adjust_inventory(product_id):
-    product = Product.query.get_or_404(product_id)
+    product = Product.objects.get_or_404(id=product_id)
     data = request.get_json()
     adj_type = data.get('type')  # 'IN' or 'OUT'
     amount = int(data.get('amount', 0))
@@ -79,18 +78,19 @@ def adjust_inventory(product_id):
     else:
         product.quantity -= amount
     
-    transaction = Transaction(product_id=product.id, type=adj_type, quantity=amount, notes=notes)
-    db.session.add(transaction)
-    db.session.commit()
+    product.save()
+    
+    transaction = Transaction(product=product, type=adj_type, quantity=amount, notes=notes)
+    transaction.save()
     
     return jsonify({'message': 'Inventory adjusted!', 'new_quantity': product.quantity})
 
 @main.route('/api/transactions')
 def get_transactions():
-    transactions = Transaction.query.order_by(Transaction.timestamp.desc()).all()
+    transactions = Transaction.objects.order_by('-timestamp').all()
     return jsonify([
         {
-            'id': t.id,
+            'id': str(t.id),
             'product_name': t.product.name,
             'sku': t.product.sku,
             'type': t.type,

@@ -1,28 +1,29 @@
 from app import db
 from datetime import datetime
+import mongoengine as me
 
-class Product(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    sku = db.Column(db.String(50), unique=True, nullable=False)
-    name = db.Column(db.String(100), nullable=False)
-    category = db.Column(db.String(50))
-    price = db.Column(db.Float, default=0.0)
-    quantity = db.Column(db.Integer, default=0)
-    threshold = db.Column(db.Integer, default=10)  # Low stock threshold
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+class Product(db.Document):
+    sku = me.StringField(unique=True, required=True)
+    name = me.StringField(required=True)
+    category = me.StringField()
+    price = me.FloatField(default=0.0)
+    quantity = me.IntField(default=0)
+    threshold = me.IntField(default=10)
+    created_at = me.DateTimeField(default=datetime.utcnow)
+
+    meta = {'collection': 'products'}
 
     def __repr__(self):
         return f'<Product {self.sku}: {self.name}>'
 
-class Transaction(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
-    type = db.Column(db.String(10), nullable=False)  # 'IN' or 'OUT'
-    quantity = db.Column(db.Integer, nullable=False)
-    notes = db.Column(db.String(200))
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+class Transaction(db.Document):
+    product = me.ReferenceField(Product, reverse_delete_rule=me.CASCADE, required=True)
+    type = me.StringField(required=True, choices=['IN', 'OUT'])
+    quantity = me.IntField(required=True)
+    notes = me.StringField()
+    timestamp = me.DateTimeField(default=datetime.utcnow)
 
-    product = db.relationship('Product', backref=db.backref('transactions', lazy=True))
+    meta = {'collection': 'transactions'}
 
     def __repr__(self):
-        return f'<Transaction {self.type} {self.quantity} for Product {self.product_id}>'
+        return f'<Transaction {self.type} {self.quantity} for Product {self.product.name}>'
