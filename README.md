@@ -60,7 +60,7 @@ If you prefer to run the components manually, follow these steps:
 ---
 
 ## 📂 Project Structure
-- `backend/`: Flask REST API, Database models, and SQLite instance.
+- `backend/`: Flask REST API, Database models, and MongoDB configuration.
 - `frontend/`: React source code, components, and premium CSS.
 - `.github/workflows/`: CI/CD build verification scripts.
 - `docker-compose.yml`: Orchestration for the entire stack.
@@ -68,4 +68,4 @@ If you prefer to run the components manually, follow these steps:
 ---
 
 ## 📝 Stability Note
-This project uses **SQLite** for zero-configuration stability. The database file is persisted in `backend/instance/inventory.db` and is automatically backed up via Docker volumes when using Docker Compose.
+This project uses **MongoDB Atlas** for scalable and cloud-native data storage. The connection URI is managed via the `backend/.env` file. Ensure your MongoDB Atlas cluster is accessible and the URI is correctly configured for the application to function.

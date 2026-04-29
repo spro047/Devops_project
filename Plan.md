@@ -22,7 +22,7 @@ The goal is to build a stable, functional, and easy-to-maintain Inventory Manage
 ## 3. Simplified Technology Stack
 To ensure stability and ease of development, we will use proven, lightweight technologies:
 - **Backend**: **Flask (Python)** - Simple, stable, and powerful.
-- **Database**: **SQLite** - Serverless, zero-config, and extremely reliable for this scale.
+- **Database**: **MongoDB Atlas** - Cloud-native, scalable NoSQL database for flexible data management.
 - **Frontend**: **React** with **Vite** - Modern, reactive UI for a premium user experience.
 - **API**: **REST API** using Flask to serve the React frontend.
 - **Tooling**: 

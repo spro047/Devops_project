@@ -4,7 +4,7 @@ import Dashboard from './components/Dashboard';
 import ProductCatalog from './components/ProductCatalog';
 import AddProduct from './components/AddProduct';
 import TransactionHistory from './components/TransactionHistory';
-import { getDashboardData } from './services/api';
+import { getDashboardData, API_BASE_URL } from './services/api';
 
 function App() {
   const [view, setView] = useState('dashboard');
@@ -38,7 +38,7 @@ function App() {
         <div className="container" style={{ marginTop: '5rem', textAlign: 'center' }}>
           <div className="glass-card">
             <h2 style={{ color: 'var(--danger)' }}>Failed to connect to backend</h2>
-            <p style={{ color: 'var(--text-muted)', margin: '1rem 0' }}>Please ensure the Flask server is running at http://localhost:5000</p>
+            <p style={{ color: 'var(--text-muted)', margin: '1rem 0' }}>Please ensure the Flask server is running at {API_BASE_URL.replace('/api', '')}</p>
             <button onClick={refreshData} className="btn btn-primary">Retry Connection</button>
           </div>
         </div>
