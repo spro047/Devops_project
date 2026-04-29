@@ -14,5 +14,8 @@ export const getProducts = () => api.get('/products');
 export const getTransactions = () => api.get('/transactions');
 export const addProduct = (productData) => api.post('/product', productData);
 export const adjustInventory = (productId, adjustment) => api.post(`/inventory/adjust/${productId}`, adjustment);
+export const getWarehouseStatus = () => api.get('/warehouse/status');
+export const getDispatchQueue = () => api.get('/dispatch/queue');
+export const processDispatch = () => api.post('/dispatch/process');
 
 export default api;

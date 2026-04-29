@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Package, PlusCircle, History } from 'lucide-react';
+import { LayoutDashboard, Package, PlusCircle, History, Layers } from 'lucide-react';
 
 const Navbar = ({ onNavigate, currentView }) => {
   return (
@@ -39,6 +39,14 @@ const Navbar = ({ onNavigate, currentView }) => {
               style={{ background: 'none', border: 'none', color: currentView === 'activity' ? 'var(--text-main)' : 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
             >
               <History size={18} /> Activity
+            </button>
+          </li>
+          <li>
+            <button 
+              onClick={() => onNavigate('warehouse')} 
+              style={{ background: 'none', border: 'none', color: currentView === 'warehouse' ? 'var(--text-main)' : 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            >
+              <Layers size={18} /> Warehouse
             </button>
           </li>
           <li>

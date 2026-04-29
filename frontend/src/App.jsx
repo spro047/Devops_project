@@ -4,6 +4,7 @@ import Dashboard from './components/Dashboard';
 import ProductCatalog from './components/ProductCatalog';
 import AddProduct from './components/AddProduct';
 import TransactionHistory from './components/TransactionHistory';
+import WarehouseModule from './components/WarehouseModule';
 import { getDashboardData, API_BASE_URL } from './services/api';
 
 function App() {
@@ -52,6 +53,8 @@ function App() {
         return <ProductCatalog />;
       case 'activity':
         return <TransactionHistory />;
+      case 'warehouse':
+        return <WarehouseModule />;
       case 'add':
         return <AddProduct 
                   onSuccess={() => { setView('dashboard'); refreshData(); }} 

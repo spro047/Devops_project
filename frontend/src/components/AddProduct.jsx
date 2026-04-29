@@ -72,9 +72,9 @@ const AddProduct = ({ onSuccess, onCancel }) => {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
             <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Initial Qty</label>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Initial Quantity (Warehouse)</label>
               <input 
                 type="number"
                 min="0"
@@ -83,7 +83,7 @@ const AddProduct = ({ onSuccess, onCancel }) => {
               />
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Threshold</label>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Low Stock Threshold</label>
               <input 
                 type="number"
                 min="1"
@@ -93,8 +93,44 @@ const AddProduct = ({ onSuccess, onCancel }) => {
             </div>
           </div>
 
-          <div style={{ marginTop: '2rem' }}>
-            <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Create Product</button>
+          <div style={{ borderTop: '1px solid var(--border)', paddingTop: '2rem' }}>
+            <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem', color: 'var(--text-main)' }}>Warehouse Details</h3>
+            
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Storage Zone</label>
+              <select 
+                value={formData.zone || 'Zone A'}
+                onChange={(e) => setFormData({...formData, zone: e.target.value})}
+              >
+                <option value="Zone A">Zone A (General Storage)</option>
+                <option value="Zone B">Zone B (High Value / Tech)</option>
+                <option value="Zone C">Zone C (Bulk / Large Items)</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Batch ID (Optional)</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. BAT-2024-01"
+                  value={formData.batch_id || ''}
+                  onChange={(e) => setFormData({...formData, batch_id: e.target.value})}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Arrival Date</label>
+                <input 
+                  type="date"
+                  value={formData.arrival_date || new Date().toISOString().split('T')[0]}
+                  onChange={(e) => setFormData({...formData, arrival_date: e.target.value})}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: '2.5rem' }}>
+            <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '1rem' }}>Register & Store in Warehouse</button>
             <button 
               type="button" 
               onClick={onCancel}

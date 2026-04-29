@@ -59,6 +59,13 @@ const ProductCatalog = () => {
         </select>
       </div>
 
+      {products.filter(p => p.quantity > 0 && p.quantity <= p.threshold).map(product => (
+        <div key={product.id} className="alert alert-warning">
+          <span role="img" aria-label="warning">⚠️</span>
+          Product <strong>{product.name}</strong> is running low ({product.quantity} remaining)
+        </div>
+      ))}
+
       <div className="glass-card" style={{ padding: 0, overflow: 'hidden', marginTop: '1rem' }}>
         <div style={{ overflowX: 'auto' }}>
           <table>
@@ -67,8 +74,9 @@ const ProductCatalog = () => {
                 <th>SKU</th>
                 <th>Name</th>
                 <th>Category</th>
-                <th>Price</th>
-                <th>Stock</th>
+                <th>Storage Zone</th>
+                <th>Usable Stock</th>
+                <th>Damaged</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -78,15 +86,23 @@ const ProductCatalog = () => {
                   <td><code>{product.sku}</code></td>
                   <td>{product.name}</td>
                   <td>{product.category}</td>
-                  <td>${product.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                  <td>{product.quantity}</td>
+                  <td><span className="badge" style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--primary)' }}>{product.zone}</span></td>
+                  <td style={{ 
+                    color: product.status === 'Out of Stock' ? 'var(--danger)' : product.status === 'Low Stock' ? 'var(--warning)' : 'inherit',
+                    fontWeight: product.status === 'Out of Stock' ? 'bold' : 'normal'
+                  }}>
+                    {product.quantity}
+                  </td>
+                  <td style={{ color: product.damaged_quantity > 0 ? 'var(--danger)' : 'var(--text-muted)' }}>
+                    {product.damaged_quantity || 0}
+                  </td>
                   <td>
-                    {product.quantity <= 0 ? (
-                      <span className="badge badge-danger">Out of Stock</span>
-                    ) : product.quantity <= product.threshold ? (
-                      <span className="badge badge-warning">Low Stock</span>
+                    {product.status === 'Out of Stock' ? (
+                      <span className="badge badge-danger">🔴 {product.status}</span>
+                    ) : product.status === 'Low Stock' ? (
+                      <span className="badge badge-warning">🟡 {product.status}</span>
                     ) : (
-                      <span className="badge badge-success">Healthy</span>
+                      <span className="badge badge-success">🟢 {product.status}</span>
                     )}
                   </td>
                 </tr>
