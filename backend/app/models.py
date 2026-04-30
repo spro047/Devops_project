@@ -27,11 +27,19 @@ class Product(db.Document):
 
 class DispatchQueue(db.Document):
     product = me.ReferenceField(Product, required=True)
-    request_id = me.StringField(required=True)
+    request_id = me.StringField(unique=True)
     store_name = me.StringField(required=True)
     quantity = me.IntField(required=True)
+    fulfilled_quantity = me.IntField(default=0)
     priority = me.IntField(default=1) # 1: Low, 2: Medium, 3: High
-    status = me.StringField(default='Pending', choices=['Pending', 'Dispatched', 'Cancelled'])
+    status = me.StringField(default='Pending') # Pending, Approved, Dispatched, Completed
+    source = me.StringField(default='Central Warehouse')
+    current_location = me.StringField(default='Warehouse')
+    lat = me.FloatField(default=12.9716) # Default Warehouse Lat
+    lng = me.FloatField(default=77.5946) # Default Warehouse Lng
+    dest_lat = me.FloatField(default=12.2958) # Default Store Lat
+    dest_lng = me.FloatField(default=76.6394) # Default Store Lng
+    estimated_delivery = me.StringField()
     created_at = me.DateTimeField(default=datetime.utcnow)
 
     meta = {'collection': 'dispatch_queue'}
