@@ -342,14 +342,152 @@ def get_dispatch_queue():
 @main.route('/api/transactions')
 def get_transactions():
     transactions = Transaction.objects.order_by('-timestamp').all()
-    return jsonify([
-        {
+    result = []
+    for t in transactions:
+        try:
+            product_name = t.product.name
+            sku = t.product.sku
+        except Exception:
+            product_name = 'Deleted Product'
+            sku = 'UNKNOWN'
+            
+        result.append({
             'id': str(t.id),
-            'product_name': t.product.name,
-            'sku': t.product.sku,
+            'product_name': product_name,
+            'sku': sku,
             'type': t.type,
             'quantity': t.quantity,
             'notes': t.notes,
             'timestamp': t.timestamp.isoformat()
-        } for t in transactions
-    ])
+        })
+    return jsonify(result)
+
+@main.route('/api/store/order', methods=['POST'])
+def place_store_order():
+    data = request.get_json()
+    sku = data.get('sku')
+    quantity = int(data.get('quantity', 1))
+    customer_name = data.get('customer_name', 'Anonymous')
+    
+    product = Product.objects(sku=sku).first()
+    if not product:
+        return jsonify({'error': 'Product not found'}), 404
+        
+    if product.quantity < quantity:
+        return jsonify({'error': 'Insufficient stock', 'available': product.quantity}), 400
+        
+    # Deduct from batches (FIFO)
+    remaining = quantity
+    product.batches.sort(key=lambda b: b.arrival_date)
+    for batch in product.batches:
+        if remaining <= 0: break
+        if batch.quantity >= remaining:
+            batch.quantity -= remaining
+            remaining = 0
+        else:
+            remaining -= batch.quantity
+            batch.quantity = 0
+            
+    # Clean up empty batches
+    product.batches = [b for b in product.batches if b.quantity > 0]
+    product.quantity -= quantity
+    product.save()
+    
+    order_id = str(uuid.uuid4())[:8].upper()
+    
+    transaction = Transaction(
+        product=product,
+        type='DISPATCH',
+        quantity=quantity,
+        notes=f"🛒 E-commerce Order #{order_id} by {customer_name}"
+    )
+    transaction.save()
+    
+    return jsonify({
+        'message': 'Order placed successfully!',
+        'order_id': order_id,
+        'new_quantity': product.quantity
+    })
+
+@main.route('/api/inventory/adjust/<string:product_id>', methods=['POST'])
+def adjust_inventory(product_id):
+    product = Product.objects.get_or_404(id=product_id)
+    data = request.get_json()
+    adj_type = data.get('type')  # 'IN' or 'OUT'
+    amount = int(data.get('amount', 0))
+    notes = data.get('notes', 'Manual adjustment')
+
+    if adj_type == 'OUT':
+        if product.quantity < amount:
+            return jsonify({'error': 'Insufficient stock for adjustment'}), 400
+        
+        # Deduct from batches (FIFO)
+        remaining = amount
+        product.batches.sort(key=lambda b: b.arrival_date)
+        for batch in product.batches:
+            if remaining <= 0: break
+            if batch.quantity >= remaining:
+                batch.quantity -= remaining
+                remaining = 0
+            else:
+                remaining -= batch.quantity
+                batch.quantity = 0
+        product.batches = [b for b in product.batches if b.quantity > 0]
+        product.quantity -= amount
+    else:
+        # 'IN' - Create a new manual adjustment batch
+        new_batch = Batch(
+            batch_id=f"ADJ-{str(uuid.uuid4())[:4].upper()}",
+            quantity=amount,
+            arrival_date=datetime.utcnow(),
+            supplier="Manual Adjustment"
+        )
+        product.batches.append(new_batch)
+        product.quantity += amount
+
+    product.save()
+    
+    transaction = Transaction(
+        product=product,
+        type='ADJUST',
+        quantity=amount,
+        notes=f"{adj_type}: {notes}"
+    )
+    transaction.save()
+    
+    return jsonify({'message': 'Inventory adjusted successfully', 'new_quantity': product.quantity})
+
+@main.route('/api/sell/<string:product_id>', methods=['POST'])
+def sell_product(product_id):
+    product = Product.objects.get_or_404(id=product_id)
+    data = request.get_json()
+    amount = int(data.get('amount', 0))
+    
+    if product.quantity < amount:
+        return jsonify({'error': 'Not enough stock to sell!'}), 400
+        
+    # Deduct from batches (FIFO)
+    remaining = amount
+    product.batches.sort(key=lambda b: b.arrival_date)
+    for batch in product.batches:
+        if remaining <= 0: break
+        if batch.quantity >= remaining:
+            batch.quantity -= remaining
+            remaining = 0
+        else:
+            remaining -= batch.quantity
+            batch.quantity = 0
+            
+    product.batches = [b for b in product.batches if b.quantity > 0]
+    product.quantity -= amount
+    product.save()
+    
+    transaction = Transaction(
+        product=product,
+        type='DISPATCH',
+        quantity=amount,
+        notes=f"Direct Sale: {data.get('notes', 'No notes')}"
+    )
+    transaction.save()
+    
+    return jsonify({'message': 'Sale recorded successfully', 'new_quantity': product.quantity})

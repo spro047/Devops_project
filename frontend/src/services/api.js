@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const API_BASE_URL = 'http://localhost:5000/api';
+export const API_BASE_URL = 'http://127.0.0.1:5000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -17,5 +17,6 @@ export const adjustInventory = (productId, adjustment) => api.post(`/inventory/a
 export const getWarehouseStatus = () => api.get('/warehouse/status');
 export const getDispatchQueue = () => api.get('/dispatch/queue');
 export const processDispatch = () => api.post('/dispatch/process');
+export const placeStoreOrder = (orderData) => api.post('/store/order', orderData);
 
 export default api;
