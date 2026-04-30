@@ -30,8 +30,9 @@ class DispatchQueue(db.Document):
     request_id = me.StringField(required=True)
     store_name = me.StringField(required=True)
     quantity = me.IntField(required=True)
+    fulfilled_quantity = me.IntField(default=0)
     priority = me.IntField(default=1) # 1: Low, 2: Medium, 3: High
-    status = me.StringField(default='Pending', choices=['Pending', 'Dispatched', 'Cancelled'])
+    status = me.StringField(default='Pending', choices=['Pending', 'Approved', 'Dispatched', 'Completed', 'Rejected', 'Cancelled'])
     created_at = me.DateTimeField(default=datetime.utcnow)
 
     meta = {'collection': 'dispatch_queue'}

@@ -7,24 +7,37 @@ import { RefreshCcw } from 'lucide-react';
 const Dashboard = ({ data, onRefresh }) => {
   const [adjustments, setAdjustments] = useState({});
 
-  const handleAdjust = async (productId) => {
-    const adj = adjustments[productId];
+  const handleAdjust = async (product) => {
+    const adj = adjustments[product.id];
     if (!adj || !adj.amount) return;
 
     try {
+      const payload = {
+        sku: product.sku,
+        quantity: parseInt(adj.amount)
+      };
+
       if (adj.type === 'SELL') {
-        await api.post(`/sell/${productId}`, { amount: parseInt(adj.amount) });
+        // Use direct sell for immediate dashboard updates
+        await api.post('/sell', payload);
+      } else if (adj.type === 'OUT') {
+        // WASTE (OUT) uses the damage endpoint
+        await api.post('/damage', {
+          ...payload,
+          notes: 'Manual waste recording from dashboard'
+        });
       } else {
-        await adjustInventory(productId, {
-          type: adj.type || 'IN',
-          amount: parseInt(adj.amount),
-          notes: 'Manual update from dashboard'
+        // RESTOCK (IN) uses the receive endpoint
+        await api.post('/receive', {
+          ...payload,
+          supplier: 'Express Restock'
         });
       }
+      
       onRefresh();
-      setAdjustments({ ...adjustments, [productId]: { amount: '', type: 'IN' } });
+      setAdjustments({ ...adjustments, [product.id]: { amount: '', type: 'IN' } });
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to update inventory');
+      alert(err.response?.data?.error || 'Operation failed');
     }
   };
 
@@ -60,6 +73,32 @@ const Dashboard = ({ data, onRefresh }) => {
           value={data?.out_of_stock_count || 0} 
           color={data?.out_of_stock_count > 0 ? 'var(--danger)' : 'var(--success)'} 
         />
+      </div>
+
+      {/* NEW: Tracking Search Section */}
+      <div className="glass-card" style={{ marginBottom: '2rem', background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(15, 23, 42, 0.8) 100%)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '2rem' }}>
+          <div style={{ flex: 1 }}>
+            <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Track your Shipment</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Enter a Dispatch Tracking ID to see live movement and ETA.</p>
+          </div>
+          <div style={{ display: 'flex', gap: '0.75rem', flex: 1, maxWidth: '400px' }}>
+            <input 
+              type="text" 
+              placeholder="e.g. TRK12345" 
+              id="tracking-input"
+              style={{ flex: 1, padding: '0.75rem' }}
+              onKeyDown={(e) => { if(e.key === 'Enter') onTrack(e.target.value.toUpperCase()) }}
+            />
+            <button 
+              className="btn btn-primary" 
+              style={{ padding: '0 1.5rem' }}
+              onClick={() => onTrack(document.getElementById('tracking-input').value.toUpperCase())}
+            >
+              Track
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="glass-card" style={{ marginBottom: '2rem' }}>
@@ -117,7 +156,7 @@ const Dashboard = ({ data, onRefresh }) => {
                         <option value="SELL">SELL</option>
                       </select>
                       <button 
-                        onClick={() => handleAdjust(product.id)}
+                        onClick={() => handleAdjust(product)}
                         className="btn btn-primary" 
                         style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
                       >

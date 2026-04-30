@@ -78,6 +78,7 @@ const ProductCatalog = () => {
                 <th>Usable Stock</th>
                 <th>Damaged</th>
                 <th>Status</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -104,6 +105,29 @@ const ProductCatalog = () => {
                     ) : (
                       <span className="badge badge-success">🟢 {product.status}</span>
                     )}
+                  </td>
+                  <td>
+                    <button 
+                      onClick={() => {
+                        const qty = prompt("Enter quantity to request from warehouse:");
+                        if (!qty) return;
+                        const store = prompt("Enter destination store name:", "Main Showroom");
+                        if (!store) return;
+                        
+                        import('../services/api').then(api => {
+                          api.requestStock({
+                            sku: product.sku,
+                            quantity: parseInt(qty),
+                            store_name: store,
+                            priority: product.status === 'Low Stock' ? 3 : 2
+                          }).then(() => alert("Request sent to warehouse!")).catch(err => alert(err.response?.data?.error || "Request failed"));
+                        });
+                      }}
+                      className="btn btn-primary" 
+                      style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
+                    >
+                      Request
+                    </button>
                   </td>
                 </tr>
               ))}

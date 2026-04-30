@@ -5,10 +5,14 @@ import ProductCatalog from './components/ProductCatalog';
 import AddProduct from './components/AddProduct';
 import TransactionHistory from './components/TransactionHistory';
 import WarehouseModule from './components/WarehouseModule';
+import DispatchManagement from './components/DispatchManagement';
+import LogisticsTracking from './components/LogisticsTracking';
+import ShipmentTracking from './components/ShipmentTracking';
 import { getDashboardData, API_BASE_URL } from './services/api';
 
 function App() {
   const [view, setView] = useState('dashboard');
+  const [trackingId, setTrackingId] = useState('');
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -25,6 +29,9 @@ function App() {
 
   useEffect(() => {
     refreshData();
+    const handleNavLogistics = () => setView('logistics');
+    window.addEventListener('nav-logistics', handleNavLogistics);
+    return () => window.removeEventListener('nav-logistics', handleNavLogistics);
   }, []);
 
   const renderView = () => {
@@ -48,13 +55,23 @@ function App() {
 
     switch (view) {
       case 'dashboard':
-        return <Dashboard data={dashboardData} onRefresh={refreshData} />;
+        return <Dashboard 
+                  data={dashboardData} 
+                  onRefresh={refreshData} 
+                  onTrack={(id) => { setTrackingId(id); setView('tracking'); }}
+                />;
       case 'inventory':
         return <ProductCatalog />;
       case 'activity':
         return <TransactionHistory />;
       case 'warehouse':
-        return <WarehouseModule />;
+        return <WarehouseModule onProcessQueue={() => setView('dispatch')} />;
+      case 'dispatch':
+        return <DispatchManagement onBack={() => setView('warehouse')} />;
+      case 'logistics':
+        return <LogisticsTracking onBack={() => setView('dispatch')} />;
+      case 'tracking':
+        return <ShipmentTracking initialTrackingId={trackingId} onBack={() => setView('dashboard')} />;
       case 'add':
         return <AddProduct 
                   onSuccess={() => { setView('dashboard'); refreshData(); }} 

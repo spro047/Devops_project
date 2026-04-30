@@ -3,6 +3,17 @@ from app import db
 from app.models import Product, Transaction, Batch, DispatchQueue
 from datetime import datetime
 import uuid
+import threading
+import time
+
+def simulate_delivery(request_id):
+    # Simulate truck travel for 30 seconds
+    time.sleep(30)
+    req = DispatchQueue.objects(id=request_id).first()
+    if req and req.status == 'Dispatched':
+        req.status = 'Completed'
+        req.save()
+        print(f"DELIVERY SIMULATION: {req.request_id} has arrived at {req.store_name}")
 
 main = Blueprint('main', __name__)
 
@@ -17,8 +28,23 @@ def get_status(quantity, threshold):
     else:
         return "In Stock"
 
+# Demo Data Initialization
+def init_demo_data():
+    if DispatchQueue.objects.count() == 0:
+        p = Product.objects.first()
+        if p:
+            demo_req = DispatchQueue(
+                product=p,
+                request_id="DEMO-777",
+                store_name="City Center Hub",
+                quantity=25,
+                priority=2
+            )
+            demo_req.save()
+
 @main.route('/api/health')
 def health():
+    init_demo_data()
     return jsonify({'status': 'running'})
 
 @main.route('/api/dashboard')
@@ -58,7 +84,7 @@ def warehouse_status():
     for p in products:
         if p.batches:
             oldest_batch = min(p.batches, key=lambda b: b.arrival_date)
-            days_in_stock = (datetime.utcnow() - oldest_batch.arrival_date).days
+            days_in_stock = max(0, (datetime.utcnow() - oldest_batch.arrival_date).days)
             aging_data.append({
                 'name': p.name,
                 'sku': p.sku,
@@ -284,6 +310,79 @@ def process_dispatch():
 
     return jsonify({'processed': processed, 'errors': errors})
 
+@main.route('/api/track/<string:request_id>')
+def track_shipment(request_id):
+    req = DispatchQueue.objects(request_id=request_id).first()
+    if not req:
+        return jsonify({'error': 'Tracking ID not found'}), 404
+        
+    return jsonify({
+        'id': str(req.id),
+        'tracking_id': req.request_id,
+        'product_name': req.product.name,
+        'sku': req.product.sku,
+        'source': 'Central Warehouse',
+        'destination': req.store_name,
+        'quantity': req.quantity,
+        'fulfilled_quantity': req.fulfilled_quantity,
+        'status': req.status,
+        'priority': req.priority,
+        'created_at': req.created_at.isoformat(),
+        'estimated_delivery': 'Tomorrow, 4:00 PM'
+    })
+
+@main.route('/api/warehouse/move', methods=['POST'])
+def move_zone():
+    data = request.get_json()
+    sku = data.get('sku')
+    new_zone = data.get('zone')
+    
+    product = Product.objects(sku=sku).first()
+    if not product:
+        return jsonify({'error': 'Product not found'}), 404
+        
+    old_zone = product.zone
+    product.zone = new_zone
+    product.save()
+    
+    transaction = Transaction(
+        product=product,
+        type='ADJUST',
+        quantity=0,
+        notes=f"Zone transfer: {old_zone} -> {new_zone}"
+    )
+    transaction.save()
+    
+    return jsonify({'message': f'Product moved to {new_zone} successfully'})
+
+@main.route('/api/warehouse/clear-old', methods=['POST'])
+def clear_old_stock():
+    data = request.get_json()
+    sku = data.get('sku')
+    
+    product = Product.objects(sku=sku).first()
+    if not product or not product.batches:
+        return jsonify({'error': 'No stock to clear'}), 400
+        
+    # Find oldest batch
+    product.batches.sort(key=lambda b: b.arrival_date)
+    oldest = product.batches[0]
+    clear_qty = oldest.quantity
+    
+    product.batches.pop(0)
+    product.quantity -= clear_qty
+    product.save()
+    
+    transaction = Transaction(
+        product=product,
+        type='ADJUST',
+        quantity=clear_qty,
+        notes=f"Old stock clearance (Batch: {oldest.batch_id})"
+    )
+    transaction.save()
+    
+    return jsonify({'message': f'Cleared {clear_qty} units of old stock'})
+
 @main.route('/api/damage', methods=['POST'])
 def mark_damage():
     data = request.get_json()
@@ -322,6 +421,42 @@ def mark_damage():
 
     return jsonify({'message': 'Waste stock recorded successfully'})
 
+@main.route('/api/sell', methods=['POST'])
+def direct_sell():
+    data = request.get_json()
+    sku = data.get('sku')
+    quantity = int(data.get('quantity', 0))
+
+    product = Product.objects(sku=sku).first()
+    if not product or product.quantity < quantity:
+        return jsonify({'error': 'Invalid SKU or insufficient stock'}), 400
+
+    # Reduce from batches (FIFO)
+    remaining = quantity
+    product.batches.sort(key=lambda b: b.arrival_date)
+    for batch in product.batches:
+        if remaining <= 0: break
+        if batch.quantity >= remaining:
+            batch.quantity -= remaining
+            remaining = 0
+        else:
+            remaining -= batch.quantity
+            batch.quantity = 0
+            
+    product.batches = [b for b in product.batches if b.quantity > 0]
+    product.quantity -= quantity
+    product.save()
+
+    transaction = Transaction(
+        product=product,
+        type='DISPATCH',
+        quantity=quantity,
+        notes='Direct sale from dashboard'
+    )
+    transaction.save()
+
+    return jsonify({'message': 'Sale successful, stock updated'})
+
 @main.route('/api/dispatch/queue')
 def get_dispatch_queue():
     queue = DispatchQueue.objects.order_by('-priority', 'created_at').all()
@@ -333,11 +468,79 @@ def get_dispatch_queue():
             'sku': q.product.sku,
             'store_name': q.store_name,
             'quantity': q.quantity,
+            'fulfilled_quantity': q.fulfilled_quantity,
             'priority': q.priority,
             'status': q.status,
-            'created_at': q.created_at.isoformat()
+            'created_at': q.created_at.isoformat(),
+            'available_stock': q.product.quantity
         } for q in queue
     ])
+
+@main.route('/api/dispatch/<string:request_id>', methods=['PUT'])
+def update_dispatch(request_id):
+    data = request.get_json()
+    action = data.get('action') # 'APPROVE', 'REJECT', 'FULFILL'
+    
+    req = DispatchQueue.objects.get_or_404(id=request_id)
+    product = req.product
+
+    if action == 'REJECT':
+        req.status = 'Rejected'
+        req.save()
+        return jsonify({'message': 'Request rejected'})
+
+    if action == 'APPROVE':
+        req.status = 'Approved'
+        req.save()
+        return jsonify({'message': 'Request approved'})
+
+    if action == 'FULFILL':
+        fill_qty = int(data.get('quantity', req.quantity))
+        
+        if product.quantity < fill_qty:
+            return jsonify({'error': 'Insufficient warehouse stock'}), 400
+
+        # FIFO reduction
+        remaining = fill_qty
+        product.batches.sort(key=lambda b: b.arrival_date)
+        
+        for batch in product.batches:
+            if remaining <= 0: break
+            if batch.quantity >= remaining:
+                batch.quantity -= remaining
+                remaining = 0
+            else:
+                remaining -= batch.quantity
+                batch.quantity = 0
+        
+        product.batches = [b for b in product.batches if b.quantity > 0]
+        product.quantity -= fill_qty
+        product.save()
+
+        req.fulfilled_quantity += fill_qty
+        if req.fulfilled_quantity >= req.quantity:
+            req.status = 'Completed'
+        else:
+            req.status = 'Dispatched' # Partial fulfillment
+        req.save()
+
+        transaction = Transaction(
+            product=product,
+            type='DISPATCH',
+            quantity=fill_qty,
+            notes=f"Dispatch to {req.store_name} (Req: {req.request_id})"
+        )
+        transaction.save()
+        
+        # Start background simulation
+        threading.Thread(target=simulate_delivery, args=(str(req.id),)).start()
+        
+        return jsonify({
+            'message': f'Dispatched {fill_qty} units. Truck is now in transit to {req.store_name}.',
+            'status': req.status
+        })
+
+    return jsonify({'error': 'Invalid action'}), 400
 
 @main.route('/api/transactions')
 def get_transactions():
