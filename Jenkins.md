@@ -8,6 +8,37 @@ This document outlines the automated pipeline for testing, building, and deployi
 
 The Jenkins pipeline follows a **Declarative Pipeline** structure, ensuring a consistent and repeatable process for every code change.
 
+## 🔄 Visual Workflow
+
+```mermaid
+graph TD
+    A[Developer Pushes Code] --> B{Jenkins Trigger}
+    B --> C[Stage: Checkout]
+    C --> D[Stage: Automated Tests]
+    D -->|Fail| E[Notify Developer]
+    D -->|Pass| F[Stage: Build Docker Images]
+    F --> G[Stage: Scan for Security]
+    G --> H[Stage: Push to Registry]
+    H --> I[Stage: Deploy to K8s]
+    I --> J[App Live & Monitored]
+```
+
+---
+
+## 👨‍💻 Developer Workflow
+
+1.  **Code & Commit**: Developer works on a feature branch and commits changes.
+2.  **Pull Request**: Developer opens a PR to `main`.
+3.  **CI Trigger**: Jenkins automatically starts the "Build Check" pipeline.
+4.  **Feedback Loop**: If tests fail, Jenkins marks the PR as failed. Developer fixes the code.
+5.  **Merge**: Once tests pass and code is reviewed, the PR is merged.
+6.  **CD Trigger**: Jenkins triggers the production deployment pipeline.
+7.  **Rollout**: Kubernetes performs a rolling update to the latest version.
+
+---
+
+## 🏗️ Pipeline Architecture Detail
+
 ### 1. Stage: Checkout
 *   Jenkins pulls the latest code from the `main` or feature branch.
 
