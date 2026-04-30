@@ -71,7 +71,7 @@ function App() {
       case 'logistics':
         return <LogisticsTracking onBack={() => setView('dispatch')} />;
       case 'tracking':
-        return <ShipmentTracking initialTrackingId={trackingId} onBack={() => setView('dashboard')} />;
+        return <ShipmentTracking trackingId={trackingId} onBack={() => setView('dashboard')} />;
       case 'add':
         return <AddProduct 
                   onSuccess={() => { setView('dashboard'); refreshData(); }} 

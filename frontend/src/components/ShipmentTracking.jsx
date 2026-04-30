@@ -1,225 +1,271 @@
-import React, { useState, useEffect } from 'react';
-import { trackShipment } from '../services/api';
-import { Truck, MapPin, Box, CheckCircle, Search, ArrowLeft, Clock, Info } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { getTrackingDetails } from '../services/api';
+import { Truck, MapPin, Box, CheckCircle, ArrowLeft, Clock, Activity, Navigation, AlertTriangle } from 'lucide-react';
 
-const ShipmentTracking = ({ initialTrackingId, onBack }) => {
-  const [trackingId, setTrackingId] = useState(initialTrackingId || '');
+const ShipmentTracking = ({ trackingId, onBack }) => {
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const handleTrack = async (e) => {
-    if (e) e.preventDefault();
-    if (!trackingId) return;
-
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await trackShipment(trackingId);
-      setData(res.data);
-    } catch (err) {
-      setError(err.response?.data?.error || 'Tracking ID not found');
-      setData(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const mapRef = useRef(null);
+  const markerRef = useRef(null);
+  const mapInstance = useRef(null);
 
   useEffect(() => {
-    if (initialTrackingId) {
-      handleTrack();
+    const fetchTracking = async () => {
+      try {
+        const res = await getTrackingDetails(trackingId);
+        setData(res.data);
+      } catch (err) {
+        setError(err.response?.data?.error || "Tracking ID not found");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTracking();
+    const interval = setInterval(fetchTracking, 2000); // Faster polling for smooth movement
+    return () => clearInterval(interval);
+  }, [trackingId]);
+
+  useEffect(() => {
+    if (!data || !window.L) return;
+
+    const lat = data.lat || 12.9716;
+    const lng = data.lng || 77.5946;
+
+    if (!mapInstance.current) {
+      // Initialize Map
+      mapInstance.current = window.L.map('map-container', {
+        zoomControl: false,
+        attributionControl: false
+      }).setView([lat, lng], 10);
+
+      window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstance.current);
+
+      // Warehouse Marker
+      window.L.marker([12.9716, 77.5946], {
+        icon: window.L.divIcon({
+          className: 'custom-div-icon',
+          html: "<div style='background:var(--primary); padding:8px; border-radius:50%; color:white; border:2px solid white;'>📦</div>",
+          iconSize: [30, 30],
+          iconAnchor: [15, 15]
+        })
+      }).addTo(mapInstance.current).bindPopup("Central Warehouse");
+
+      // Store Marker
+      window.L.marker([data.dest_lat || 12.2958, data.dest_lng || 76.6394], {
+        icon: window.L.divIcon({
+          className: 'custom-div-icon',
+          html: "<div style='background:var(--success); padding:8px; border-radius:50%; color:white; border:2px solid white;'>📍</div>",
+          iconSize: [30, 30],
+          iconAnchor: [15, 15]
+        })
+      }).addTo(mapInstance.current).bindPopup(data.store_name);
+
+      // Route Line
+      window.L.polyline([
+        [12.9716, 77.5946],
+        [data.dest_lat || 12.2958, data.dest_lng || 76.6394]
+      ], { color: 'var(--primary)', dashArray: '10, 10', opacity: 0.5 }).addTo(mapInstance.current);
+
+      // Truck Marker
+      markerRef.current = window.L.marker([lat, lng], {
+        icon: window.L.divIcon({
+          className: 'truck-icon',
+          html: "<div style='color:var(--primary); filter: drop-shadow(0 0 5px white);'><svg width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='1' y='3' width='15' height='13'></rect><polygon points='16 8 20 8 23 11 23 16 16 16 16 8'></polygon><circle cx='5.5' cy='18.5' r='2.5'></circle><circle cx='18.5' cy='18.5' r='2.5'></circle></svg></div>",
+          iconSize: [32, 32],
+          iconAnchor: [16, 16]
+        })
+      }).addTo(mapInstance.current);
     }
-  }, [initialTrackingId]);
+
+    if (markerRef.current) {
+       markerRef.current.setLatLng([lat, lng]);
+       if (data.status === 'Dispatched') {
+          mapInstance.current.panTo([lat, lng]);
+       }
+    }
+  }, [data]);
+
+  if (loading) return <div className="container" style={{marginTop: '4rem', textAlign: 'center'}}>📡 Connecting to satellite...</div>;
+  if (error) return (
+    <div className="container" style={{marginTop: '4rem', textAlign: 'center'}}>
+      <AlertTriangle size={64} color="var(--danger)" style={{marginBottom: '1rem'}} />
+      <h2 style={{color: 'var(--danger)'}}>{error}</h2>
+      <button onClick={onBack} className="btn btn-primary" style={{marginTop: '1rem'}}>Go Back</button>
+    </div>
+  );
 
   const steps = [
     { label: 'Order Created', status: 'Pending' },
-    { label: 'Dispatched', status: 'Approved' },
+    { label: 'Loading', status: 'Approved' },
     { label: 'In Transit', status: 'Dispatched' },
     { label: 'Delivered', status: 'Completed' }
   ];
 
-  const getCurrentStepIndex = () => {
-    if (!data) return -1;
-    const index = steps.findIndex(s => s.status === data.status);
-    return index !== -1 ? index : (data.status === 'Rejected' ? -2 : 0);
-  };
-
-  const currentStep = getCurrentStepIndex();
+  const currentStepIndex = steps.findIndex(s => s.status === data.status);
 
   return (
-    <div className="container">
+    <div className="container" style={{ paddingBottom: '4rem' }}>
       <header style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
         <button onClick={onBack} className="btn" style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)', padding: '0.5rem' }}>
           <ArrowLeft size={20} />
         </button>
         <div>
-          <h1 style={{ fontSize: '2.5rem', fontWeight: 600 }}>Shipment <span style={{ color: 'var(--primary)' }}>Tracking</span></h1>
-          <p style={{ color: 'var(--text-muted)' }}>Real-time status of your goods in movement.</p>
+          <h1 style={{ fontSize: '2rem', fontWeight: 600 }}>Shipment <span style={{ color: 'var(--primary)' }}>Tracking</span></h1>
+          <p style={{ color: 'var(--text-muted)' }}>Real-time movement via GPS Simulation</p>
         </div>
       </header>
 
-      <div className="glass-card" style={{ marginTop: '2rem', padding: '2rem' }}>
-        <form onSubmit={handleTrack} style={{ display: 'flex', gap: '1rem', maxWidth: '600px' }}>
-          <input 
-            type="text" 
-            placeholder="Enter Tracking ID (e.g. TRK12345)"
-            value={trackingId}
-            onChange={(e) => setTrackingId(e.target.value.toUpperCase())}
-            style={{ flex: 1, padding: '1rem' }}
-          />
-          <button type="submit" className="btn btn-primary" disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0 2rem' }}>
-            {loading ? 'Searching...' : <><Search size={18} /> Track</>}
-          </button>
-        </form>
-      </div>
-
-      {error && (
-        <div className="alert alert-danger" style={{ marginTop: '2rem' }}>
-          <Info size={18} /> {error}
-        </div>
-      )}
-
-      {data && (
-        <div style={{ marginTop: '2rem', display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '2rem', marginTop: '2rem' }}>
+        {/* Left Side: Summary & Timeline */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           
-          {/* Summary & Timeline */}
-          <div className="glass-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', borderBottom: '1px solid var(--border)', paddingBottom: '1.5rem' }}>
-              <div>
-                <h3 style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Tracking ID</h3>
-                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary)' }}>{data.tracking_id}</div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <h3 style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Status</h3>
-                <span className={`badge ${data.status === 'Completed' ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '1rem' }}>
+          {/* Section 1: Summary */}
+          <div className="glass-card" style={{ padding: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+               <div>
+                  <h4 style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Tracking ID</h4>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary)' }}>{data.tracking_id}</div>
+               </div>
+               <span className={`badge ${data.status === 'Completed' ? 'badge-success' : 'badge-warning'}`} style={{ height: 'fit-content' }}>
                   {data.status.toUpperCase()}
-                </span>
-              </div>
+               </span>
             </div>
-
-            {/* Timeline View */}
-            <div style={{ marginTop: '3rem', position: 'relative', display: 'flex', justifyContent: 'space-between' }}>
-              {/* Timeline Line */}
-              <div style={{ 
-                position: 'absolute', 
-                top: '20px', 
-                left: '5%', 
-                width: '90%', 
-                height: '4px', 
-                background: 'rgba(255,255,255,0.05)', 
-                zIndex: 0 
-              }}>
-                <div style={{ 
-                  height: '100%', 
-                  background: 'var(--primary)', 
-                  width: `${(currentStep / (steps.length - 1)) * 100}%`, 
-                  transition: 'width 1s ease' 
-                }}></div>
-              </div>
-
-              {steps.map((step, i) => (
-                <div key={i} style={{ position: 'relative', zIndex: 1, textAlign: 'center', width: '20%' }}>
-                  <div style={{ 
-                    width: '40px', 
-                    height: '40px', 
-                    background: i <= currentStep ? 'var(--primary)' : 'rgba(15, 23, 42, 0.9)', 
-                    border: `2px solid ${i <= currentStep ? 'var(--primary)' : 'rgba(255,255,255,0.1)'}`,
-                    borderRadius: '50%', 
-                    margin: '0 auto 1rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    boxShadow: i <= currentStep ? '0 0 15px rgba(99, 102, 241, 0.4)' : 'none'
-                  }}>
-                    {i < currentStep ? <CheckCircle size={20} /> : i === currentStep ? <Truck size={20} className="animate-pulse" /> : i + 1}
-                  </div>
-                  <div style={{ fontSize: '0.8rem', fontWeight: i <= currentStep ? 600 : 400, color: i <= currentStep ? 'var(--text-main)' : 'var(--text-muted)' }}>
-                    {step.label}
-                  </div>
-                </div>
-              ))}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+               <div>
+                  <h4 style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Product</h4>
+                  <div style={{ fontWeight: 600 }}>{data.product_name}</div>
+               </div>
+               <div>
+                  <h4 style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Quantity</h4>
+                  <div style={{ fontWeight: 600 }}>{data.quantity} units</div>
+               </div>
+               <div>
+                  <h4 style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Source</h4>
+                  <div style={{ fontWeight: 600 }}>{data.source}</div>
+               </div>
+               <div>
+                  <h4 style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Destination</h4>
+                  <div style={{ fontWeight: 600 }}>{data.store_name}</div>
+               </div>
             </div>
-
-            <div style={{ marginTop: '4rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-              <div>
-                <h4 style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Product Details</h4>
-                <p style={{ fontWeight: 600 }}>{data.product_name} ({data.quantity} units)</p>
-              </div>
-              <div>
-                <h4 style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Estimated Arrival</h4>
-                <p style={{ fontWeight: 600, color: 'var(--primary)' }}>{data.estimated_delivery}</p>
-              </div>
-              <div>
-                <h4 style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>From</h4>
-                <p style={{ fontWeight: 600 }}>{data.source}</p>
-              </div>
-              <div>
-                <h4 style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>To</h4>
-                <p style={{ fontWeight: 600 }}>{data.destination}</p>
-              </div>
+            <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+               <Clock size={20} color="var(--primary)" />
+               <div>
+                  <h4 style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Est. Delivery</h4>
+                  <div style={{ fontWeight: 600, color: 'var(--primary)' }}>{data.estimated_delivery}</div>
+               </div>
             </div>
           </div>
 
-          {/* Map & Visual Animation */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            <div className="glass-card" style={{ padding: '2rem', height: '300px', position: 'relative', overflow: 'hidden' }}>
-              <h2 style={{ fontSize: '1.1rem', marginBottom: '1.5rem' }}>Live Path</h2>
-              <div style={{ position: 'relative', width: '100%', height: '150px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 3rem' }}>
-                <Box size={40} color="var(--primary)" />
-                <div style={{ flex: 1, position: 'relative', height: '2px', background: 'rgba(255,255,255,0.1)', margin: '0 1rem' }}>
-                   <div style={{ 
-                     position: 'absolute', 
-                     top: '-20px', 
-                     left: `${(currentStep / (steps.length - 1)) * 100}%`,
-                     transition: 'left 2s ease-in-out',
-                     color: 'var(--primary)'
-                   }}>
-                     <Truck size={30} />
-                   </div>
-                </div>
-                <MapPin size={40} color="var(--success)" />
-              </div>
-              <div style={{ marginTop: '1rem', textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                {currentStep === 3 ? 'Package Delivered!' : currentStep >= 1 ? 'Shipment is on the way.' : 'Awaiting dispatch.'}
-              </div>
-            </div>
-
-            <div className="glass-card">
-              <h2 style={{ fontSize: '1.1rem', marginBottom: '1.5rem' }}>Tracking History</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-                  <Clock size={16} color="var(--text-muted)" style={{ marginTop: '4px' }} />
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Shipment Processed</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(data.created_at).toLocaleString()}</div>
-                  </div>
-                </div>
-                {currentStep >= 1 && (
-                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-                    <Truck size={16} color="var(--primary)" style={{ marginTop: '4px' }} />
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Handed over to Fleet</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Updating...</div>
+          {/* Section 2: Timeline */}
+          <div className="glass-card" style={{ padding: '2rem' }}>
+            <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+               <Activity size={18} color="var(--primary)" /> Status Timeline
+            </h3>
+            <div style={{ position: 'relative', paddingLeft: '2rem' }}>
+               <div style={{ position: 'absolute', left: '7px', top: 0, bottom: 0, width: '2px', background: 'rgba(255,255,255,0.05)' }}></div>
+               {steps.map((step, idx) => {
+                  const isDone = idx <= currentStepIndex;
+                  const isCurrent = idx === currentStepIndex;
+                  return (
+                    <div key={idx} style={{ marginBottom: '1.5rem', position: 'relative' }}>
+                       <div style={{ 
+                         position: 'absolute', 
+                         left: '-2rem', 
+                         width: '16px', 
+                         height: '16px', 
+                         background: isCurrent ? 'var(--primary)' : isDone ? 'var(--success)' : 'var(--bg-card)', 
+                         borderRadius: '50%',
+                         border: `3px solid ${isCurrent ? 'white' : 'var(--border)'}`,
+                         zIndex: 1,
+                         boxShadow: isCurrent ? '0 0 10px var(--primary)' : 'none'
+                       }}></div>
+                       <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontWeight: isCurrent ? 700 : 500, color: isCurrent ? 'var(--text-main)' : isDone ? 'var(--text-main)' : 'var(--text-muted)' }}>
+                             {step.label} {isDone && idx !== currentStepIndex && '✔'}
+                          </span>
+                          {isCurrent && <span style={{ fontSize: '0.75rem', color: 'var(--primary)' }}>Currently: {data.current_location}</span>}
+                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  );
+               })}
             </div>
+          </div>
+        </div>
+
+        {/* Right Side: Map & Visual Flow */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          
+          {/* Section 3: Visual Flow */}
+          <div className="glass-card" style={{ padding: '2rem', textAlign: 'center' }}>
+             <h3 style={{ fontSize: '1.1rem', marginBottom: '2rem' }}>Live Transit Path</h3>
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', padding: '0 2rem' }}>
+                <div style={{ textAlign: 'center', zIndex: 2 }}>
+                   <div style={{ background: 'var(--primary)', padding: '0.75rem', borderRadius: '50%', color: 'white', marginBottom: '0.5rem' }}>
+                      <Box size={24} />
+                   </div>
+                   <div style={{ fontSize: '0.7rem', fontWeight: 700 }}>WH-MAIN</div>
+                </div>
+
+                 <div style={{ flex: 1, height: '2px', background: 'rgba(255,255,255,0.1)', position: 'relative', margin: '0 1rem' }}>
+                    {/* Calculate smooth percentage based on coordinates for the 2D icon */}
+                    {(() => {
+                      const startLat = 12.9716;
+                      const endLat = data.dest_lat || 12.2958;
+                      const currentLat = data.lat;
+                      
+                      let progress = 0;
+                      if (data.status === 'Dispatched') {
+                        // Calculate progress based on how far we are from startLat to endLat
+                        const totalDist = Math.abs(startLat - endLat);
+                        const currentDist = Math.abs(startLat - currentLat);
+                        progress = Math.min(95, Math.max(5, (currentDist / totalDist) * 100));
+                      } else if (data.status === 'Approved') {
+                        progress = 5;
+                      } else if (data.status === 'Completed') {
+                        progress = 100;
+                      } else {
+                        progress = 0;
+                      }
+
+                      return (
+                        <div style={{ 
+                          position: 'absolute', 
+                          left: `${progress}%`, 
+                          top: '-20px', 
+                          transition: 'left 1s linear',
+                          color: 'var(--primary)',
+                          transform: 'translateX(-50%)'
+                        }}>
+                           <Truck size={32} />
+                        </div>
+                      );
+                    })()}
+                 </div>
+
+                <div style={{ textAlign: 'center', zIndex: 2 }}>
+                   <div style={{ background: 'var(--success)', padding: '0.75rem', borderRadius: '50%', color: 'white', marginBottom: '0.5rem' }}>
+                      <MapPin size={24} />
+                   </div>
+                   <div style={{ fontSize: '0.7rem', fontWeight: 700 }}>{data.store_name}</div>
+                </div>
+             </div>
+          </div>
+
+          {/* Section 4: Map View */}
+          <div className="glass-card" style={{ padding: '0.5rem', overflow: 'hidden' }}>
+             <div style={{ padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                   <Navigation size={18} color="var(--primary)" /> Real-Time Satellite Map
+                </h3>
+                <span style={{ fontSize: '0.7rem', color: 'var(--primary)', background: 'rgba(99, 102, 241, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>LIVE GPS</span>
+             </div>
+             <div id="map-container" style={{ width: '100%', height: '400px', borderRadius: '12px' }}></div>
           </div>
 
         </div>
-      )}
-
-      <style>{`
-        .animate-pulse {
-          animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: .5; }
-        }
-      `}</style>
+      </div>
     </div>
   );
 };

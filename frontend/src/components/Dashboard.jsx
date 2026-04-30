@@ -4,8 +4,9 @@ import InventoryChart from './InventoryChart';
 import api, { adjustInventory } from '../services/api';
 import { RefreshCcw } from 'lucide-react';
 
-const Dashboard = ({ data, onRefresh }) => {
+const Dashboard = ({ data, onRefresh, onTrack }) => {
   const [adjustments, setAdjustments] = useState({});
+  const [trackInput, setTrackInput] = useState('');
 
   const handleAdjust = async (product) => {
     const adj = adjustments[product.id];
@@ -82,21 +83,43 @@ const Dashboard = ({ data, onRefresh }) => {
             <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Track your Shipment</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Enter a Dispatch Tracking ID to see live movement and ETA.</p>
           </div>
-          <div style={{ display: 'flex', gap: '0.75rem', flex: 1, maxWidth: '400px' }}>
-            <input 
-              type="text" 
-              placeholder="e.g. TRK12345" 
-              id="tracking-input"
-              style={{ flex: 1, padding: '0.75rem' }}
-              onKeyDown={(e) => { if(e.key === 'Enter') onTrack(e.target.value.toUpperCase()) }}
-            />
-            <button 
-              className="btn btn-primary" 
-              style={{ padding: '0 1.5rem' }}
-              onClick={() => onTrack(document.getElementById('tracking-input').value.toUpperCase())}
-            >
-              Track
-            </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: 1, maxWidth: '400px' }}>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <input 
+                type="text" 
+                placeholder="e.g. DEMO-777" 
+                value={trackInput}
+                onChange={(e) => setTrackInput(e.target.value.toUpperCase())}
+                style={{ flex: 1, padding: '0.75rem' }}
+                onKeyDown={(e) => { if(e.key === 'Enter') onTrack(trackInput) }}
+              />
+              <button 
+                className="btn btn-primary" 
+                style={{ padding: '0 1.5rem' }}
+                onClick={() => onTrack(trackInput)}
+              >
+                Track
+              </button>
+            </div>
+            {/* Suggested IDs */}
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <span>Recent IDs:</span>
+              <button 
+                onClick={() => onTrack('DEMO-777')}
+                style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: '2px 6px', borderRadius: '4px' }}
+              >
+                DEMO-777
+              </button>
+              {data?.recent_transactions?.filter(t => t.type === 'DISPATCH').slice(0, 2).map(t => (
+                <button 
+                  key={t.id}
+                  onClick={() => onTrack(t.notes.match(/Req: (.*)\)/)?.[1])}
+                  style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: '2px 6px', borderRadius: '4px' }}
+                >
+                  {t.notes.match(/Req: (.*)\)/)?.[1]}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>

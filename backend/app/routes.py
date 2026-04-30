@@ -6,14 +6,64 @@ import uuid
 import threading
 import time
 
+ACTIVE_SIMULATIONS = set()
+
 def simulate_delivery(request_id):
-    # Simulate truck travel for 30 seconds
-    time.sleep(30)
-    req = DispatchQueue.objects(id=request_id).first()
-    if req and req.status == 'Dispatched':
-        req.status = 'Completed'
+    if request_id in ACTIVE_SIMULATIONS: return
+    ACTIVE_SIMULATIONS.add(request_id)
+    
+    try:
+        req = DispatchQueue.objects(id=request_id).first()
+        if not req: return
+
+        # Step 0 & 1: Order Created & Loading (10 seconds total)
+        if req.status == 'Pending':
+            req.current_location = 'Warehouse (Order Processing)'
+            req.save()
+            time.sleep(5)
+            req.status = 'Approved'
+            req.current_location = 'Warehouse Dock (Loading)'
+            req.save()
+            time.sleep(5)
+
+        # Step 2: Final Checks (5 seconds)
+        if req.status == 'Approved':
+            req.current_location = 'Security Gate (Final Exit)'
+            req.save()
+            time.sleep(5)
+            # Now set to Dispatched ONLY when movement is about to begin
+            req.status = 'Dispatched'
+            req.save()
+        
+        # Step 3: In Transit (Actually Moving)
+        if req.status == 'Dispatched':
+            req.current_location = 'On Main Highway'
+            steps = 5
+            for i in range(1, steps + 1):
+                # Interpolate between Warehouse (12.9716, 77.5946) and Store (12.2958, 76.6394)
+                req.lat = 12.9716 + (12.2958 - 12.9716) * (i / steps)
+                req.lng = 77.5946 + (76.6394 - 77.5946) * (i / steps)
+                
+                if i < 2: req.current_location = 'Outer Ring Road'
+                elif i < 4: req.current_location = 'Industrial Bypass'
+                else: req.current_location = 'Approaching City Hub'
+                
+                req.save()
+                time.sleep(3) # Wait AFTER saving to ensure movement reflects in polls
+
+        # Step 4: Arrived at Destination (5 seconds)
+        req.current_location = 'Destination Hub Dock'
         req.save()
-        print(f"DELIVERY SIMULATION: {req.request_id} has arrived at {req.store_name}")
+        time.sleep(5)
+
+        # Step 5: Delivered
+        req.status = 'Completed'
+        req.current_location = f"Delivered at {req.store_name}"
+        req.lat = req.dest_lat
+        req.lng = req.dest_lng
+        req.save()
+    finally:
+        ACTIVE_SIMULATIONS.discard(request_id)
 
 main = Blueprint('main', __name__)
 
@@ -30,17 +80,28 @@ def get_status(quantity, threshold):
 
 # Demo Data Initialization
 def init_demo_data():
-    if DispatchQueue.objects.count() == 0:
+    demo = DispatchQueue.objects(request_id="DEMO-777").first()
+    if not demo:
         p = Product.objects.first()
         if p:
-            demo_req = DispatchQueue(
+            demo = DispatchQueue(
                 product=p,
                 request_id="DEMO-777",
                 store_name="City Center Hub",
                 quantity=25,
-                priority=2
+                priority=2,
+                status="Pending",
+                estimated_delivery="2 hours",
+                current_location="Warehouse"
             )
-            demo_req.save()
+            demo.save()
+    elif demo.status == 'Completed':
+        # Reset for repeated demos
+        demo.status = 'Pending'
+        demo.current_location = 'Warehouse'
+        demo.lat = 12.9716
+        demo.lng = 77.5946
+        demo.save()
 
 @main.route('/api/health')
 def health():
@@ -49,7 +110,9 @@ def health():
 
 @main.route('/api/dashboard')
 def dashboard():
+    init_demo_data()
     products = Product.objects.all()
+    recent_tx = Transaction.objects.order_by('-timestamp')[:5]
     current_stock = sum(p.quantity for p in products)
     capacity_usage = (current_stock / MAX_WAREHOUSE_CAPACITY) * 100
     low_stock_count = len([p for p in products if 0 < p.quantity <= p.threshold])
@@ -70,6 +133,14 @@ def dashboard():
                 'quantity': p.quantity,
                 'status': get_status(p.quantity, p.threshold)
             } for p in products[:10]
+        ],
+        'recent_transactions': [
+            {
+                'id': str(t.id),
+                'type': t.type,
+                'notes': t.notes,
+                'timestamp': t.timestamp.isoformat()
+            } for t in recent_tx
         ]
     })
 
@@ -210,6 +281,12 @@ def receive_shipment():
     quantity = int(data.get('quantity', 0))
     supplier = data.get('supplier', 'Unknown')
     
+    # New Tracking Fields
+    enable_tracking = data.get('enableTracking', False)
+    destination = data.get('destination', 'Store A')
+    dispatch_type = data.get('dispatchType', 'Later')
+    est_delivery = data.get('estDelivery', '1 day')
+    
     product = Product.objects(sku=sku).first()
     if not product:
         return jsonify({'error': 'Product not found. Register product first.'}), 404
@@ -238,6 +315,31 @@ def receive_shipment():
         notes=f"Shipment from {supplier}. Batch: {new_batch.batch_id}"
     )
     transaction.save()
+
+    # Create Tracking Entry if requested
+    if enable_tracking:
+        tracking_id = data.get('tracking_id') or f"TRK-{uuid.uuid4().hex[:5].upper()}"
+        req = DispatchQueue(
+            product=product,
+            request_id=tracking_id,
+            store_name=destination,
+            quantity=quantity,
+            status='Pending',
+            estimated_delivery=est_delivery
+        )
+        req.save()
+
+        if dispatch_type == 'Immediate':
+            # Reduce stock immediately as it's going out
+            product.quantity -= quantity
+            product.save()
+            
+            threading.Thread(target=simulate_delivery, args=(str(req.id),)).start()
+            return jsonify({
+                'message': f'Received and Dispatched immediately! Tracking ID: {tracking_id}',
+                'tracking_id': tracking_id,
+                'batch_id': new_batch.batch_id
+            })
 
     return jsonify({'message': 'Shipment received successfully', 'batch_id': new_batch.batch_id})
 
@@ -312,23 +414,50 @@ def process_dispatch():
 
 @main.route('/api/track/<string:request_id>')
 def track_shipment(request_id):
-    req = DispatchQueue.objects(request_id=request_id).first()
+    clean_id = request_id.strip().upper()
+    req = DispatchQueue.objects(request_id__iexact=clean_id).first()
     if not req:
         return jsonify({'error': 'Tracking ID not found'}), 404
         
+    # AUTO-START SIMULATION: If it's the demo and NOT running, RESET it to start from zero!
+    is_running = str(req.id) in ACTIVE_SIMULATIONS
+    if clean_id == "DEMO-777" and not is_running:
+        req.status = 'Pending'
+        req.current_location = 'Warehouse'
+        req.lat = 12.9716
+        req.lng = 77.5946
+        req.save()
+        threading.Thread(target=simulate_delivery, args=(str(req.id),)).start()
+    elif (req.status in ['Pending', 'Approved']) and not is_running:
+        threading.Thread(target=simulate_delivery, args=(str(req.id),)).start()
+        
+    # Generate realistic history based on current status
+    history = [{'time': req.created_at.isoformat(), 'status': 'Order Created'}]
+    
+    if req.status in ['Approved', 'Dispatched', 'Completed']:
+        history.append({'time': (req.created_at).isoformat(), 'status': 'Loading at Warehouse'})
+    
+    if req.status in ['Dispatched', 'Completed']:
+        history.append({'time': (req.created_at).isoformat(), 'status': 'Dispatched from Warehouse'})
+        history.append({'time': (req.created_at).isoformat(), 'status': 'In Transit'})
+
+    if req.status == 'Completed':
+        history.append({'time': (req.created_at).isoformat(), 'status': 'Delivered Successfully'})
+
     return jsonify({
-        'id': str(req.id),
         'tracking_id': req.request_id,
         'product_name': req.product.name,
-        'sku': req.product.sku,
-        'source': 'Central Warehouse',
-        'destination': req.store_name,
-        'quantity': req.quantity,
-        'fulfilled_quantity': req.fulfilled_quantity,
+        'quantity': req.fulfilled_quantity or req.quantity,
         'status': req.status,
-        'priority': req.priority,
-        'created_at': req.created_at.isoformat(),
-        'estimated_delivery': 'Tomorrow, 4:00 PM'
+        'store_name': req.store_name,
+        'source': req.source,
+        'current_location': req.current_location,
+        'lat': req.lat,
+        'lng': req.lng,
+        'dest_lat': req.dest_lat,
+        'dest_lng': req.dest_lng,
+        'estimated_delivery': req.estimated_delivery or "Pending Approval",
+        'history': history
     })
 
 @main.route('/api/warehouse/move', methods=['POST'])

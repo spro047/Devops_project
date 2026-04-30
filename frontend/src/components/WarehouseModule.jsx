@@ -18,7 +18,17 @@ const WarehouseModule = ({ onProcessQueue }) => {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showReceiveModal, setShowReceiveModal] = useState(false);
-  const [receiveForm, setReceiveForm] = useState({ sku: '', quantity: '', supplier: '', zone: 'Zone A' });
+  const [receiveForm, setReceiveForm] = useState({ 
+    sku: '', 
+    quantity: '', 
+    supplier: '', 
+    zone: 'Zone A',
+    enableTracking: true,
+    trackingId: `TRK-${Math.floor(10000 + Math.random() * 90000)}`,
+    dest: 'Store A',
+    dispatchType: 'Later',
+    est: '2 hours'
+  });
 
   const fetchData = async () => {
     try {
@@ -49,7 +59,13 @@ const WarehouseModule = ({ onProcessQueue }) => {
       await receiveShipment({
         sku: receiveForm.sku,
         quantity: parseInt(receiveForm.quantity),
-        supplier: receiveForm.supplier
+        supplier: receiveForm.supplier,
+        enableTracking: receiveForm.enableTracking,
+        tracking_id: receiveForm.trackingId, // Send the same ID we show on screen
+        destination: receiveForm.dest || 'Store A',
+        dispatchType: receiveForm.dispatchType || 'Later',
+        dispatchDate: receiveForm.date,
+        estDelivery: receiveForm.est || '1 day'
       });
       // If zone is different from default, move it
       const p = products.find(p => p.sku === receiveForm.sku);
@@ -57,7 +73,17 @@ const WarehouseModule = ({ onProcessQueue }) => {
         await moveZone({ sku: receiveForm.sku, zone: receiveForm.zone });
       }
       setShowReceiveModal(false);
-      setReceiveForm({ sku: '', quantity: '', supplier: '', zone: 'Zone A' });
+      setReceiveForm({ 
+        sku: '', 
+        quantity: '', 
+        supplier: '', 
+        zone: 'Zone A',
+        enableTracking: true,
+        trackingId: `TRK-${Math.floor(10000 + Math.random() * 90000)}`,
+        dest: 'Store A',
+        dispatchType: 'Later',
+        est: '2 hours'
+      });
       fetchData();
     } catch (err) {
       alert(err.response?.data?.error || "Failed to receive shipment");
@@ -278,25 +304,30 @@ const WarehouseModule = ({ onProcessQueue }) => {
       {/* Receive Modal */}
       {showReceiveModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div className="glass-card" style={{ width: '500px', padding: '2rem' }}>
-            <h2 style={{ marginBottom: '1.5rem' }}>Receive New Shipment</h2>
+          <div className="glass-card" style={{ width: '600px', padding: '2rem', maxHeight: '90vh', overflowY: 'auto' }}>
+            <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <Plus size={24} color="var(--primary)" /> Receive New Shipment
+            </h2>
             <form onSubmit={handleReceive}>
-              <div style={{ marginBottom: '1rem' }}>
-                <label>Select Product (SKU)</label>
-                <select 
-                  value={receiveForm.sku} 
-                  onChange={(e) => setReceiveForm({...receiveForm, sku: e.target.value})}
-                  required
-                >
-                  <option value="">Select SKU...</option>
-                  {products.map(p => <option key={p.id} value={p.sku}>{p.sku} - {p.name}</option>)}
-                </select>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                <div>
+                  <label>Select Product (SKU)</label>
+                  <select 
+                    value={receiveForm.sku} 
+                    onChange={(e) => setReceiveForm({...receiveForm, sku: e.target.value})}
+                    required
+                  >
+                    <option value="">Select SKU...</option>
+                    {products.map(p => <option key={p.id} value={p.sku}>{p.sku} - {p.name}</option>)}
+                  </select>
+                </div>
                 <div>
                   <label>Quantity</label>
                   <input type="number" required value={receiveForm.quantity} onChange={(e) => setReceiveForm({...receiveForm, quantity: e.target.value})} />
                 </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
                 <div>
                   <label>Storage Zone</label>
                   <select value={receiveForm.zone} onChange={(e) => setReceiveForm({...receiveForm, zone: e.target.value})}>
@@ -305,13 +336,70 @@ const WarehouseModule = ({ onProcessQueue }) => {
                     <option value="Zone C">Zone C</option>
                   </select>
                 </div>
+                <div>
+                  <label>Supplier Name</label>
+                  <input type="text" placeholder="e.g. Global Logistics" value={receiveForm.supplier} onChange={(e) => setReceiveForm({...receiveForm, supplier: e.target.value})} />
+                </div>
               </div>
-              <div style={{ marginBottom: '2rem' }}>
-                <label>Supplier Name</label>
-                <input type="text" value={receiveForm.supplier} onChange={(e) => setReceiveForm({...receiveForm, supplier: e.target.value})} />
+
+              {/* NEW: Tracking Details Section */}
+              <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border)', marginBottom: '2rem' }}>
+                <h3 style={{ fontSize: '0.9rem', color: 'var(--primary)', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Tracking Details (WMS)</h3>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
+                  <label style={{ margin: 0 }}>Enable Shipment Tracking?</label>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button type="button" onClick={() => setReceiveForm({...receiveForm, enableTracking: true})} className={`btn ${receiveForm.enableTracking ? 'btn-primary' : ''}`} style={{ padding: '0.25rem 1rem', fontSize: '0.8rem' }}>Yes</button>
+                    <button type="button" onClick={() => setReceiveForm({...receiveForm, enableTracking: false})} className={`btn ${!receiveForm.enableTracking ? 'btn-primary' : ''}`} style={{ padding: '0.25rem 1rem', fontSize: '0.8rem' }}>No</button>
+                  </div>
+                </div>
+
+                {receiveForm.enableTracking && (
+                  <>
+                    <div style={{ marginBottom: '1rem' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Auto-Generated ID</label>
+                      <div style={{ background: 'rgba(0,0,0,0.3)', padding: '0.5rem 1rem', borderRadius: '4px', fontFamily: 'monospace', color: 'var(--primary)', border: '1px dashed var(--primary)' }}>
+                        {receiveForm.trackingId}
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                      <div>
+                        <label>Destination Store</label>
+                        <select value={receiveForm.dest} onChange={(e) => setReceiveForm({...receiveForm, dest: e.target.value})}>
+                          <option value="Store A">Store A</option>
+                          <option value="Store B">Store B</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label>Dispatch Type</label>
+                        <select value={receiveForm.dispatchType} onChange={(e) => setReceiveForm({...receiveForm, dispatchType: e.target.value})}>
+                          <option value="Later">Later</option>
+                          <option value="Immediate">Immediate (Simulate)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div>
+                        <label>Dispatch Date</label>
+                        <input type="date" value={receiveForm.date || new Date().toISOString().split('T')[0]} onChange={(e) => setReceiveForm({...receiveForm, date: e.target.value})} />
+                      </div>
+                      <div>
+                        <label>Est. Delivery Time</label>
+                        <select value={receiveForm.est} onChange={(e) => setReceiveForm({...receiveForm, est: e.target.value})}>
+                          <option value="2 hours">2 hours</option>
+                          <option value="1 day">1 day</option>
+                          <option value="3 days">3 days</option>
+                        </select>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
+
               <div style={{ display: 'flex', gap: '1rem' }}>
-                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Submit Entry</button>
+                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Register & Store in Warehouse</button>
                 <button type="button" onClick={() => setShowReceiveModal(false)} className="btn" style={{ flex: 1, background: 'rgba(255,255,255,0.05)' }}>Cancel</button>
               </div>
             </form>

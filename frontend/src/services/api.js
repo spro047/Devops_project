@@ -17,7 +17,7 @@ export const requestStock = (data) => api.post('/request', data);
 export const adjustInventory = (productId, adjustment) => api.post(`/inventory/adjust/${productId}`, adjustment);
 export const getWarehouseStatus = () => api.get('/warehouse/status');
 export const getDispatchQueue = () => api.get('/dispatch/queue');
-export const trackShipment = (id) => api.get(`/track/${id}`);
+export const getTrackingDetails = (id) => api.get(`/track/${id}`);
 export const updateDispatch = (id, actionData) => api.put(`/dispatch/${id}`, actionData);
 export const processDispatch = () => api.post('/dispatch/process');
 export const moveZone = (data) => api.post('/warehouse/move', data);
