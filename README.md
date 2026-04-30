@@ -8,31 +8,46 @@ IMS Pro is a stable, functional, and premium-designed Inventory Management Syste
 
 ---
 
-## 🚀 Quick Start (Recommended)
+## 🚀 Execution Methods
 
-The easiest way to run the project is using **Docker Compose**. This will set up both the backend and frontend automatically.
+You can run this project in three different ways depending on your needs.
 
-### Prerequisites
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
+### Option 1: Docker Compose (Quickest)
+The easiest way to run the project locally. It sets up both the backend and frontend automatically.
 
-### Execution
-1. Clone the repository (if you haven't already).
-2. Open a terminal in the project root directory.
-3. Run the following command:
+1. Ensure [Docker Desktop](https://www.docker.com/products/docker-desktop/) is installed and running.
+2. Run the following command in the project root:
    ```bash
    docker compose up --build
    ```
-4. Access the application:
+3. Access the application:
    - **Frontend UI**: [http://localhost](http://localhost) (Port 80)
    - **Backend API**: [http://localhost:5000](http://localhost:5000)
 
 ---
 
-## 🛠️ Manual Execution (Local Development)
+### Option 2: Kubernetes (Scalable / Production-Ready)
+Run the application inside a local Kubernetes cluster using the provided manifests.
 
-If you prefer to run the components manually, follow these steps:
+1. Enable Kubernetes in Docker Desktop (or use Minikube).
+2. Ensure you have built the local Docker images (or pushed them to a registry). If using local Docker Desktop, the images from `docker compose build` will be available to K8s.
+3. Apply the manifests from the project root:
+   ```bash
+   kubectl apply -f k8s/
+   ```
+4. Verify the pods and services are running:
+   ```bash
+   kubectl get pods
+   kubectl get services
+   ```
+5. Access the application on `http://localhost` (or the IP provided by the LoadBalancer).
 
-### 1. Backend Setup (Flask)
+---
+
+### Option 3: Manual Execution (Local Development)
+If you prefer to run the components manually for coding or debugging:
+
+#### 1. Backend Setup (Flask)
 1. Navigate to the `backend` directory: `cd backend`
 2. Create a virtual environment: `python -m venv venv`
 3. Activate the environment:
@@ -42,7 +57,7 @@ If you prefer to run the components manually, follow these steps:
 5. Run the server: `python run.py`
    - The API will be live at `http://localhost:5000`.
 
-### 2. Frontend Setup (React + Vite)
+#### 2. Frontend Setup (React + Vite)
 1. Open a new terminal and navigate to the `frontend` directory: `cd frontend`
 2. Install dependencies: `npm install`
 3. Start the development server: `npm run dev`
