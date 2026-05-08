@@ -4,17 +4,25 @@ import { LayoutDashboard, Package, PlusCircle, History, Layers, ShoppingCart } f
 const Navbar = ({ onNavigate, currentView }) => {
   return (
     <nav className="navbar" style={{ 
-      background: 'rgba(15, 23, 42, 0.8)', 
-      backdropFilter: 'blur(12px)', 
-      borderBottom: '1px solid var(--border)',
+      background: 'rgba(2, 6, 23, 0.7)', 
+      backdropFilter: 'blur(20px)', 
+      borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
       padding: '1.2rem 0',
       position: 'sticky',
       top: 0,
       zIndex: 100
     }}>
       <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <a href="#" className="logo" style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text-main)', textDecoration: 'none' }}>
-          IMS<span style={{ color: 'var(--primary)' }}>Pro</span>
+        <a href="#" className="logo" style={{ 
+          fontSize: '1.8rem', 
+          fontWeight: 800, 
+          background: 'linear-gradient(to right, #f8fafc, #8b5cf6)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          textDecoration: 'none',
+          letterSpacing: '-1px'
+        }}>
+          IMSPro
         </a>
         <ul className="nav-links" style={{ display: 'flex', listStyle: 'none', gap: '2rem', alignItems: 'center' }}>
           <li>

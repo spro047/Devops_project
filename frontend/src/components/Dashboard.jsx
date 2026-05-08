@@ -51,12 +51,41 @@ const Dashboard = ({ data, onRefresh, onTrack }) => {
 
   return (
     <div className="container">
-      <header style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <header style={{ 
+        marginTop: '3rem', 
+        marginBottom: '2rem',
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'flex-end' 
+      }}>
         <div>
-          <h1 style={{ fontSize: '2.5rem', fontWeight: 600 }}>Inventory <span style={{ color: 'var(--primary)' }}>Overview</span></h1>
-          <p style={{ color: 'var(--text-muted)' }}>Real-time stock metrics and health status.</p>
+          <h1 style={{ 
+            fontSize: '3.5rem', 
+            fontWeight: 800, 
+            letterSpacing: '-2px',
+            lineHeight: 1
+          }}>
+            Inventory <span style={{ 
+              background: 'linear-gradient(to right, #8b5cf6, #06b6d4)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}>Overview</span>
+          </h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', marginTop: '0.5rem' }}>
+            Real-time stock metrics and health status.
+          </p>
         </div>
-        <button onClick={onRefresh} className="btn" style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)' }}>
+        <button 
+          onClick={onRefresh} 
+          className="btn glass-card" 
+          style={{ 
+            padding: '1rem', 
+            borderRadius: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
           <RefreshCcw size={20} />
         </button>
       </header>
