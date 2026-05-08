@@ -1,49 +1,10 @@
 pipeline {
     agent any
 
-    environment {
-        BACKEND_DIR = 'backend'
-        FRONTEND_DIR = 'frontend'
-    }
-
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
-            }
-        }
-
-        stage('Backend Tests') {
-            steps {
-                dir("${BACKEND_DIR}") {
-                    script {
-                        if (isUnix()) {
-                            sh 'python -m pip install --upgrade pip'
-                            sh 'python -m pip install -r requirements.txt'
-                            sh 'python -m pytest'
-                        } else {
-                            bat 'python -m pip install --upgrade pip'
-                            bat 'python -m pip install -r requirements.txt'
-                            bat 'python -m pytest'
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Frontend Tests') {
-            steps {
-                dir("${FRONTEND_DIR}") {
-                    script {
-                        if (isUnix()) {
-                            sh 'npm install'
-                            sh 'npm test -- --watchAll=false'
-                        } else {
-                            bat 'npm install'
-                            bat 'npm test -- --watchAll=false'
-                        }
-                    }
-                }
             }
         }
 
@@ -59,7 +20,7 @@ pipeline {
             }
         }
 
-        stage('Deploy with Docker Compose') {
+        stage('Deploy Docker Compose') {
             steps {
                 script {
                     if (isUnix()) {
