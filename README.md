@@ -10,6 +10,9 @@ IMS Pro is a stable, functional, and premium-designed Inventory Management Syste
 
 ## 🚀 Execution Methods
 
+> [!TIP]
+> For a detailed, step-by-step walkthrough, check out the [steps.md](steps.md) guide.
+
 You can run this project in three different ways depending on your needs.
 
 ### Option 1: Docker Compose (Quickest)
