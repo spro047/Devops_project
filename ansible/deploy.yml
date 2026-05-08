@@ -1,0 +1,53 @@
+---
+# Basic Ansible playbook for deploying this project using Docker Compose
+# Intended for beginners as a starting point. Adjust hosts/inventory before use.
+- name: Deploy Devops_project with Docker Compose
+  hosts: appservers
+  become: yes
+  vars:
+    project_dir: /opt/devops_project
+
+  tasks:
+    - name: Ensure apt cache is up to date (Debian/Ubuntu)
+      apt:
+        update_cache: yes
+
+    - name: Install required packages (docker, docker-compose)
+      apt:
+        name:
+          - docker.io
+          - docker-compose
+        state: present
+      when: ansible_facts['os_family'] == 'Debian'
+
+    - name: Create project directory
+      file:
+        path: "{{ project_dir }}"
+        state: directory
+        owner: "{{ ansible_user | default('root') }}"
+        mode: '0755'
+
+    - name: Copy repository docker-compose.yml to target
+      copy:
+        src: ../docker-compose.yml
+        dest: "{{ project_dir }}/docker-compose.yml"
+        mode: '0644'
+
+    - name: Ensure Docker service is started
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Pull and start containers with Docker Compose
+      command: docker compose up -d
+      args:
+        chdir: "{{ project_dir }}"
+
+    - name: Show running containers (debug)
+      command: docker ps --format '{{"{{.Names}} - {{.Status}}"}}'
+      register: docker_ps
+
+    - name: Print container list
+      debug:
+        var: docker_ps.stdout_lines
