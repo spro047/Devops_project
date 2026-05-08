@@ -26,6 +26,35 @@ The easiest way to run the project locally. It sets up both the backend and fron
 
 ---
 
+### Option 1.1: Run Jenkins with Docker Compose
+This project includes a Jenkins service in `docker-compose.yml` for CI/CD.
+
+1. Make sure [Docker Desktop](https://www.docker.com/products/docker-desktop/) is installed and running.
+2. Run from the project root:
+   ```bash
+   docker compose up --build
+   ```
+3. Open Jenkins at:
+   - `http://localhost:8080`
+4. To get the initial admin password, run:
+   ```bash
+   docker compose exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+   ```
+5. Once Jenkins is unlocked, install the suggested plugins.
+6. Create an admin user when prompted.
+7. In Jenkins, create a new Pipeline job and select "Pipeline script from SCM":
+   - Repository: `https://github.com/spro047/Devops_project.git`
+   - Branch: `main`
+   - Script Path: `Jenkinsfile`
+
+> The `docker-compose.yml` file already includes:
+> - `jenkins` service with Docker socket access
+> - `mongodb` service for the backend
+> - `backend` service
+> - `frontend` service
+
+---
+
 ### Option 2: Kubernetes (Scalable / Production-Ready)
 Run the application inside a local Kubernetes cluster using the provided manifests.
 
