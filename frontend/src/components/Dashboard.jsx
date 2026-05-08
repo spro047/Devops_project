@@ -139,15 +139,20 @@ const Dashboard = ({ data, onRefresh, onTrack }) => {
               >
                 DEMO-777
               </button>
-              {data?.recent_transactions?.filter(t => t.type === 'DISPATCH').slice(0, 2).map(t => (
-                <button 
-                  key={t.id}
-                  onClick={() => onTrack(t.notes.match(/Req: (.*)\)/)?.[1])}
-                  style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: '2px 6px', borderRadius: '4px' }}
-                >
-                  {t.notes.match(/Req: (.*)\)/)?.[1]}
-                </button>
-              ))}
+              {data?.recent_transactions?.filter(t => t.type === 'DISPATCH' && t.notes.includes('Req:')).slice(0, 2).map(t => {
+                const match = t.notes.match(/Req: (.*)\)/);
+                const trackingId = match ? match[1] : null;
+                if (!trackingId) return null;
+                return (
+                  <button 
+                    key={t.id}
+                    onClick={() => onTrack(trackingId)}
+                    style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: '2px 6px', borderRadius: '4px' }}
+                  >
+                    {trackingId}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

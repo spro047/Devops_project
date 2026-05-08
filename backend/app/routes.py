@@ -403,7 +403,7 @@ def process_dispatch():
                 product=product,
                 type='DISPATCH',
                 quantity=req.quantity,
-                notes=f"Dispatched to {req.store_name} (Priority {req.priority})"
+                notes=f"Dispatched to {req.store_name} (Req: {req.request_id})"
             )
             transaction.save()
             processed += 1
