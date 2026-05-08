@@ -50,43 +50,17 @@ const Dashboard = ({ data, onRefresh, onTrack }) => {
   };
 
   return (
-    <div className="container">
-      <header style={{ 
-        marginTop: '3rem', 
-        marginBottom: '2rem',
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'flex-end' 
-      }}>
+    <div className="container" style={{ paddingTop: '2rem' }}>
+      <header style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ 
-            fontSize: '3.5rem', 
-            fontWeight: 800, 
-            letterSpacing: '-2px',
-            lineHeight: 1
-          }}>
-            Inventory <span style={{ 
-              background: 'linear-gradient(to right, #8b5cf6, #06b6d4)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
-            }}>Overview</span>
+          <h1 style={{ fontSize: '2.2rem', fontWeight: 700, margin: 0 }}>
+            Dashboard <span style={{ color: 'var(--primary)' }}>Overview</span>
           </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', marginTop: '0.5rem' }}>
-            Real-time stock metrics and health status.
-          </p>
+          <p style={{ color: 'var(--text-muted)', margin: '0.25rem 0 0 0' }}>Real-time inventory and logistics monitoring</p>
         </div>
-        <button 
-          onClick={onRefresh} 
-          className="btn glass-card" 
-          style={{ 
-            padding: '1rem', 
-            borderRadius: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-        >
-          <RefreshCcw size={20} />
+        <button onClick={onRefresh} className="btn" style={{ background: 'var(--bg-sidebar)', border: '1px solid var(--border)', color: 'var(--primary)' }}>
+          <RefreshCcw size={18} />
+          <span>Sync Data</span>
         </button>
       </header>
 
@@ -106,11 +80,11 @@ const Dashboard = ({ data, onRefresh, onTrack }) => {
       </div>
 
       {/* NEW: Tracking Search Section */}
-      <div className="glass-card" style={{ marginBottom: '2rem', background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(15, 23, 42, 0.8) 100%)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '2rem' }}>
-          <div style={{ flex: 1 }}>
-            <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Track your Shipment</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Enter a Dispatch Tracking ID to see live movement and ETA.</p>
+      <div className="glass-card slide-in" style={{ marginBottom: '2rem', background: 'var(--primary-light)', border: 'none' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '2rem', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: '300px' }}>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--primary)', marginBottom: '0.25rem' }}>Track Shipment</h2>
+            <p style={{ color: 'var(--text-main)', opacity: 0.7, fontSize: '0.9rem', margin: 0 }}>Monitor real-time movement and delivery status</p>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: 1, maxWidth: '400px' }}>
             <div style={{ display: 'flex', gap: '0.75rem' }}>
@@ -135,7 +109,7 @@ const Dashboard = ({ data, onRefresh, onTrack }) => {
               <span>Recent IDs:</span>
               <button 
                 onClick={() => onTrack('DEMO-777')}
-                style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: '2px 6px', borderRadius: '4px' }}
+                style={{ background: 'var(--primary)', border: 'none', color: 'white', cursor: 'pointer', padding: '2px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 600 }}
               >
                 DEMO-777
               </button>
@@ -147,7 +121,7 @@ const Dashboard = ({ data, onRefresh, onTrack }) => {
                   <button 
                     key={t.id}
                     onClick={() => onTrack(trackingId)}
-                    style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: '2px 6px', borderRadius: '4px' }}
+                    style={{ background: 'var(--primary-light)', border: '1px solid var(--primary)', color: 'var(--primary)', cursor: 'pointer', padding: '2px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 600 }}
                   >
                     {trackingId}
                   </button>

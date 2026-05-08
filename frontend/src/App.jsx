@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './App.css';
 import Navbar from './components/Navbar';
 import Dashboard from './components/Dashboard';
 import ProductCatalog from './components/ProductCatalog';
@@ -37,18 +38,22 @@ function App() {
 
   const renderView = () => {
     if (loading) return (
-      <div className="container" style={{ marginTop: '5rem', textAlign: 'center' }}>
-        <div className="loading-shimmer" style={{ height: '300px', borderRadius: '16px' }}></div>
+      <div className="main-content-area">
+        <div className="container" style={{ textAlign: 'center', paddingTop: '3rem' }}>
+          <div className="loading-shimmer" style={{ height: '300px', borderRadius: '16px' }}></div>
+        </div>
       </div>
     );
 
     if (!dashboardData && (view === 'dashboard' || view === 'default')) {
       return (
-        <div className="container" style={{ marginTop: '5rem', textAlign: 'center' }}>
-          <div className="glass-card">
-            <h2 style={{ color: 'var(--danger)' }}>Failed to connect to backend</h2>
-            <p style={{ color: 'var(--text-muted)', margin: '1rem 0' }}>Please ensure the Flask server is running at {API_BASE_URL.replace('/api', '')}</p>
-            <button onClick={refreshData} className="btn btn-primary">Retry Connection</button>
+        <div className="main-content-area">
+          <div className="container" style={{ paddingTop: '3rem' }}>
+            <div className="glass-card" style={{ textAlign: 'center' }}>
+              <h2 style={{ color: 'var(--danger)', marginBottom: '1rem' }}>Failed to connect to backend</h2>
+              <p style={{ color: 'var(--text-muted)', margin: '1rem 0' }}>Please ensure the Flask server is running at {API_BASE_URL.replace('/api', '')}</p>
+              <button onClick={refreshData} className="btn btn-primary" style={{ marginTop: '1rem' }}>Retry Connection</button>
+            </div>
           </div>
         </div>
       );
@@ -86,14 +91,16 @@ function App() {
   };
 
   return (
-    <div className="App">
+    <div className="app-layout">
       <Navbar onNavigate={setView} currentView={view} />
-      <main>
-        {renderView()}
+      <main className="main-content-area">
+        <div className="container slide-in">
+          {renderView()}
+        </div>
+        <footer className="app-footer">
+          <p>&copy; 2026 IMS Pro - Clean, Slick & Minimalistic</p>
+        </footer>
       </main>
-      <footer style={{ textAlign: 'center', padding: '3rem 0', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-        <p>&copy; 2026 IMS Pro - Simple & Stable Inventory Solutions</p>
-      </footer>
     </div>
   );
 }
