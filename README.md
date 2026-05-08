@@ -35,7 +35,7 @@ This project includes a Jenkins service in `docker-compose.yml` for CI/CD.
    docker compose up --build
    ```
 3. Open Jenkins at:
-   - `http://localhost:8080`
+   - `http://localhost:8082`
 4. To get the initial admin password, run:
    ```bash
    docker compose exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
