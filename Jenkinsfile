@@ -16,9 +16,17 @@ pipeline {
         stage('Backend Tests') {
             steps {
                 dir("${BACKEND_DIR}") {
-                    sh 'python -m pip install --upgrade pip'
-                    sh 'python -m pip install -r requirements.txt'
-                    sh 'python -m pytest'
+                    script {
+                        if (isUnix()) {
+                            sh 'python -m pip install --upgrade pip'
+                            sh 'python -m pip install -r requirements.txt'
+                            sh 'python -m pytest'
+                        } else {
+                            bat 'python -m pip install --upgrade pip'
+                            bat 'python -m pip install -r requirements.txt'
+                            bat 'python -m pytest'
+                        }
+                    }
                 }
             }
         }
@@ -26,27 +34,52 @@ pipeline {
         stage('Frontend Tests') {
             steps {
                 dir("${FRONTEND_DIR}") {
-                    sh 'npm install'
-                    sh 'npm test -- --watchAll=false'
+                    script {
+                        if (isUnix()) {
+                            sh 'npm install'
+                            sh 'npm test -- --watchAll=false'
+                        } else {
+                            bat 'npm install'
+                            bat 'npm test -- --watchAll=false'
+                        }
+                    }
                 }
             }
         }
 
         stage('Build Docker Images') {
             steps {
-                sh 'docker compose build'
+                script {
+                    if (isUnix()) {
+                        sh 'docker compose build'
+                    } else {
+                        bat 'docker compose build'
+                    }
+                }
             }
         }
 
         stage('Deploy with Docker Compose') {
             steps {
-                sh 'docker compose up -d'
+                script {
+                    if (isUnix()) {
+                        sh 'docker compose up -d'
+                    } else {
+                        bat 'docker compose up -d'
+                    }
+                }
             }
         }
 
         stage('Smoke Check') {
             steps {
-                sh 'docker ps'
+                script {
+                    if (isUnix()) {
+                        sh 'docker ps'
+                    } else {
+                        bat 'docker ps'
+                    }
+                }
             }
         }
     }
