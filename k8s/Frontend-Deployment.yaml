@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ims-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ims-frontend
+  template:
+    metadata:
+      labels:
+        app: ims-frontend
+    spec:
+      containers:
+      - name: frontend
+        # Note: Replace with the actual image hosted on a registry
+        image: devops_project-frontend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80

@@ -5,6 +5,7 @@ import ProductCatalog from './components/ProductCatalog';
 import AddProduct from './components/AddProduct';
 import TransactionHistory from './components/TransactionHistory';
 import WarehouseModule from './components/WarehouseModule';
+import Shop from './components/Shop';
 import DispatchManagement from './components/DispatchManagement';
 import LogisticsTracking from './components/LogisticsTracking';
 import ShipmentTracking from './components/ShipmentTracking';
@@ -66,6 +67,8 @@ function App() {
         return <TransactionHistory />;
       case 'warehouse':
         return <WarehouseModule onProcessQueue={() => setView('dispatch')} />;
+      case 'shop':
+        return <Shop />;
       case 'dispatch':
         return <DispatchManagement onBack={() => setView('warehouse')} />;
       case 'logistics':

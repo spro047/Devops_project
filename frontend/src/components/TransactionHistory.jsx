@@ -58,13 +58,21 @@ const TransactionHistory = () => {
                     <code style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t.sku}</code>
                   </td>
                   <td>
-                    {t.type === 'IN' ? (
+                    {t.type === 'RECEIVE' ? (
                       <span style={{ color: 'var(--success)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem' }}>
                         <ArrowUpRight size={14} /> Stock In
                       </span>
-                    ) : (
+                    ) : t.type === 'DISPATCH' ? (
+                      <span style={{ color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem' }}>
+                        <ArrowDownLeft size={14} /> Dispatched
+                      </span>
+                    ) : t.type === 'DAMAGE' ? (
                       <span style={{ color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem' }}>
-                        <ArrowDownLeft size={14} /> Stock Out
+                        <ArrowDownLeft size={14} /> Damaged
+                      </span>
+                    ) : (
+                      <span style={{ color: 'var(--warning)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem' }}>
+                        <ArrowDownLeft size={14} /> Adjusted
                       </span>
                     )}
                   </td>

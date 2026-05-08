@@ -57,7 +57,26 @@ To ensure stability and ease of development, we will use proven, lightweight tec
 - Set up GitHub Actions for automated testing.
 - Final documentation.
 
-## 6. Stability & Performance Goals
+### Phase 5: Advanced Features & Expansion (New)
+- **Supplier Management**: Track vendor details and purchase history.
+- **Reporting & Exports**: Generate PDF/Excel reports for stock levels and transactions.
+- **Predictive Analytics**: Basic forecasting of stock depletion based on historical trends.
+- **Barcode/QR Support**: Scanning capabilities for mobile-friendly stock adjustments.
+- **Role-Based Access (RBAC)**: Distinct permissions for Admin (full access) and Staff (view/adjust only).
+
+### Phase 6: E-commerce Integration (Mini-Amazon)
+- **Customer Storefront**: Build a lightweight "Mini-Amazon" frontend where users can browse and "buy" products.
+- **Real-time Synchronization**: Implement automated inventory deduction in the IMS when an order is placed on the storefront.
+- **Order Notifications**: Add a real-time activity feed in the IMS dashboard to show "New Order Placed" events as they happen.
+- **Stock Reservation**: Logic to prevent overselling if two customers buy the last item simultaneously.
+
+## 6. Future Roadmap (Ideas)
+- **Email Notifications**: Automated alerts when items hit critical thresholds.
+- **Multi-Warehouse Support**: Manage stock across different geographical locations.
+- **Scalable Real-time**: Use WebSockets (Socket.io) for instant UI updates across all connected clients.
+- **PWA Support**: Transform the frontend into a Progressive Web App for offline-first capabilities.
+
+## 7. Stability & Performance Goals
 - **Responsiveness**: UI should load in under 500ms.
 - **Data Integrity**: Use database transactions to prevent inventory count mismatches.
 - **Simplicity**: No external dependencies like message brokers or complex caching layers.

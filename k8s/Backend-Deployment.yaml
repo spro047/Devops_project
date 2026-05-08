@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ims-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ims-backend
+  template:
+    metadata:
+      labels:
+        app: ims-backend
+    spec:
+      containers:
+      - name: backend
+        # Note: Replace with the actual image hosted on a registry (e.g. docker.io/youruser/ims-backend:latest)
+        image: devops_project-backend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000
+        env:
+        - name: MONGODB_URI
+          valueFrom:
+            secretKeyRef:
+              name: ims-secrets
+              key: MONGODB_URI
