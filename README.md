@@ -116,3 +116,30 @@ If you prefer to run the components manually for coding or debugging:
 
 ## 📝 Stability Note
 This project uses **MongoDB Atlas** for scalable and cloud-native data storage. The connection URI is managed via the `backend/.env` file. Ensure your MongoDB Atlas cluster is accessible and the URI is correctly configured for the application to function.
+
+---
+
+## Option 4: Ansible Automation (Provision & Deploy)
+
+You can use Ansible to automate the provisioning and deployment of this project to any Linux server (or locally via WSL2/Ubuntu).
+
+### Prerequisites
+- Ansible installed on your control machine (see Ansible.md for details)
+- SSH access to your target server(s) (passwordless recommended)
+
+### Steps
+1. Edit `ansible/inventory.ini` and set your server IP/hostname and SSH user.
+2. Run the playbook from the project root:
+   ```bash
+   ansible-playbook -i ansible/inventory.ini ansible/deploy.yml --limit local
+   ```
+   Or to deploy to a remote host:
+   ```bash
+   ansible-playbook -i ansible/inventory.ini ansible/deploy.yml
+   ```
+3. The playbook will:
+   - Install Docker and Docker Compose (if needed)
+   - Copy the project `docker-compose.yml` to the server
+   - Start all services with Docker Compose
+
+See [Ansible.md](Ansible.md) for more details and troubleshooting tips.

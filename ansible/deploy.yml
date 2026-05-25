@@ -2,7 +2,7 @@
 # Basic Ansible playbook for deploying this project using Docker Compose
 # Intended for beginners as a starting point. Adjust hosts/inventory before use.
 - name: Deploy Devops_project with Docker Compose
-  hosts: appservers
+  hosts: local
   become: yes
   vars:
     project_dir: /opt/devops_project
@@ -17,6 +17,7 @@
         name:
           - docker.io
           - docker-compose
+          - rsync
         state: present
       when: ansible_facts['os_family'] == 'Debian'
 
@@ -33,14 +34,54 @@
         dest: "{{ project_dir }}/docker-compose.yml"
         mode: '0644'
 
+    - name: Copy Jenkins Dockerfile to target
+      copy:
+        src: ../Dockerfile.jenkins
+        dest: "{{ project_dir }}/Dockerfile.jenkins"
+        mode: '0644'
+
+    - name: Sync backend directory to target
+      command:
+        argv:
+          - rsync
+          - -a
+          - --delete
+          - --exclude
+          - venv/
+          - --exclude
+          - __pycache__/
+          - "{{ playbook_dir }}/../backend/"
+          - "{{ project_dir }}/backend/"
+
+    - name: Sync frontend directory to target
+      command:
+        argv:
+          - rsync
+          - -a
+          - --delete
+          - --exclude
+          - node_modules/
+          - --exclude
+          - dist/
+          - "{{ playbook_dir }}/../frontend/"
+          - "{{ project_dir }}/frontend/"
+
     - name: Ensure Docker service is started
       service:
         name: docker
         state: started
         enabled: yes
 
+    - name: Stop old Docker Compose containers
+      command: docker-compose down --remove-orphans
+      args:
+        chdir: "{{ project_dir }}"
+      register: compose_down
+      failed_when: false
+      changed_when: "'Removing' in compose_down.stdout or 'Stopping' in compose_down.stdout"
+
     - name: Pull and start containers with Docker Compose
-      command: docker compose up -d
+      command: docker-compose up -d --build
       args:
         chdir: "{{ project_dir }}"
 
