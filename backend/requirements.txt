@@ -5,3 +5,4 @@ python-dotenv==1.0.1
 pytest==8.0.2
 flask-cors==4.0.0
 dnspython==2.6.1
+prometheus-flask-exporter==0.23.0
