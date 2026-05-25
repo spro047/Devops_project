@@ -88,7 +88,34 @@ To use the built-in Jenkins pipeline:
 
 ---
 
-## ☸️ Option 4: Kubernetes Deployment
+## 🛡 Option 4: Ansible Automation (Provision & Deploy)
+
+You can use Ansible to automate the provisioning and deployment of this project to any Linux server (or locally via WSL2/Ubuntu).
+
+### Prerequisites
+*   **Ansible** installed on your control machine (see [Ansible.md](Ansible.md) for details)
+*   **SSH access** to your target server(s) (passwordless recommended)
+
+### Steps
+1.  Edit `ansible/inventory.ini` and set your server IP/hostname and SSH user.
+2.  Run the playbook from the project root:
+   ```bash
+   ansible-playbook -i ansible/inventory.ini ansible/deploy.yml --limit local
+   ```
+   Or to deploy to a remote host:
+   ```bash
+   ansible-playbook -i ansible/inventory.ini ansible/deploy.yml
+   ```
+3.  The playbook will:
+   *   Install Docker and Docker Compose (if needed)
+   *   Copy the project `docker-compose.yml` to the server
+   *   Start all services with Docker Compose
+
+See [Ansible.md](Ansible.md) for more details and troubleshooting tips.
+
+---
+
+## ☸️ Option 5: Kubernetes Deployment
 To run the app in a Kubernetes cluster:
 
 1.  **Enable Kubernetes** in your Docker Desktop settings.
@@ -105,7 +132,7 @@ To run the app in a Kubernetes cluster:
 
 ---
 
-## 🚀 Option 5: Ansible Deployment (Cloud/Remote Server)
+## 🚀 Option 6: Ansible Deployment (Cloud/Remote Server)
 If you are deploying to a remote Ubuntu server:
 
 1.  **Configure Inventory**: Edit `ansible/inventory.ini` with your server's IP and SSH key.

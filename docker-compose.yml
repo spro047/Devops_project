@@ -23,7 +23,7 @@ services:
   backend:
     build: ./backend
     ports:
-      - "5000:5000"
+      - "5001:5000"
     environment:
       - FLASK_ENV=production
       - MONGODB_URI=mongodb://mongodb:27017/ims_pro
@@ -33,7 +33,7 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "80:80"
+      - "8080:80"
     depends_on:
       - backend
 

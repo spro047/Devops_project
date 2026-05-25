@@ -72,8 +72,16 @@
         state: started
         enabled: yes
 
+    - name: Stop old Docker Compose containers
+      command: docker-compose down --remove-orphans
+      args:
+        chdir: "{{ project_dir }}"
+      register: compose_down
+      failed_when: false
+      changed_when: "'Removing' in compose_down.stdout or 'Stopping' in compose_down.stdout"
+
     - name: Pull and start containers with Docker Compose
-      command: docker-compose up -d
+      command: docker-compose up -d --build
       args:
         chdir: "{{ project_dir }}"
 
