@@ -24,9 +24,9 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh 'docker compose up -d mongodb backend frontend prometheus grafana cadvisor'
+                        sh 'docker compose up -d --force-recreate mongodb backend frontend prometheus grafana cadvisor'
                     } else {
-                        bat 'docker compose up -d mongodb backend frontend prometheus grafana cadvisor'
+                        bat 'docker compose up -d --force-recreate mongodb backend frontend prometheus grafana cadvisor'
                     }
                 }
             }
