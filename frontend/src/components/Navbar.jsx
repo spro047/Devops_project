@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Box, PlusCircle, History, Layers, ShoppingCart } from 'lucide-react';
+import { LayoutDashboard, Box, PlusCircle, History, Layers, ShoppingCart, Globe } from 'lucide-react';
 
 const NavButton = ({ active, onClick, children, title }) => (
   <button onClick={onClick} title={title} className={active ? 'active' : ''}>
@@ -22,6 +22,7 @@ const Navbar = ({ onNavigate, currentView }) => {
         <li><NavButton active={currentView==='activity'} onClick={() => onNavigate('activity')} title="Activity"><History size={20}/> <span>Activity</span></NavButton></li>
         <li><NavButton active={currentView==='warehouse'} onClick={() => onNavigate('warehouse')} title="Warehouse"><Layers size={20}/> <span>Warehouse</span></NavButton></li>
         <li><NavButton active={currentView==='shop'} onClick={() => onNavigate('shop')} title="Storefront"><ShoppingCart size={20}/> <span>Storefront</span></NavButton></li>
+        <li><NavButton active={currentView==='helloworld'} onClick={() => onNavigate('helloworld')} title="Hello World"><Globe size={20}/> <span>Hello World</span></NavButton></li>
         
         <li style={{ marginTop: 'auto', padding: '1rem 1.5rem' }}>
           <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => onNavigate('add')}>
