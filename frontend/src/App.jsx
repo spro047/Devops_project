@@ -61,11 +61,11 @@ function App() {
 
     switch (view) {
       case 'dashboard':
-        return <Dashboard 
-                  data={dashboardData} 
-                  onRefresh={refreshData} 
-                  onTrack={(id) => { setTrackingId(id); setView('tracking'); }}
-                />;
+        return <Dashboard
+          data={dashboardData}
+          onRefresh={refreshData}
+          onTrack={(id) => { setTrackingId(id); setView('tracking'); }}
+        />;
       case 'inventory':
         return <ProductCatalog />;
       case 'activity':
@@ -87,10 +87,10 @@ function App() {
           </div>
         );
       case 'add':
-        return <AddProduct 
-                  onSuccess={() => { setView('dashboard'); refreshData(); }} 
-                  onCancel={() => setView('dashboard')} 
-               />;
+        return <AddProduct
+          onSuccess={() => { setView('dashboard'); refreshData(); }}
+          onCancel={() => setView('dashboard')}
+        />;
       default:
         return <Dashboard data={dashboardData} onRefresh={refreshData} />;
     }
@@ -104,7 +104,7 @@ function App() {
           {renderView()}
         </div>
         <footer className="app-footer">
-          <p>&copy; 2026 IMS Pro - Clean, Slick & Minimalistic Hello World </p>
+          <p>&copy; 2026 IMS Pro -HELLO WORLD DEVOPS Clean, Slick & Minimalistic Hello World </p>
         </footer>
       </main>
     </div>
