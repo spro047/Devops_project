@@ -104,7 +104,7 @@ function App() {
           {renderView()}
         </div>
         <footer className="app-footer">
-          <p>&copy; 2026 IMS Pro -HELLO WORLD DEVOPS Clean, Slick & Minimalistic Hello World </p>
+          <p>&copy; 2026 IMS Pro -HELLO WORLD DEVOPS AGAIN AND AGAIN Clean, Slick & Minimalistic Hello World </p>
         </footer>
       </main>
     </div>
