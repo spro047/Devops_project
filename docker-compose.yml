@@ -1,11 +1,13 @@
+version: '3.8'
+
 services:
   jenkins:
     build:
       context: .
       dockerfile: Dockerfile.jenkins
     ports:
-      - "8082:8080"
-      - "50000:50000"
+      - "8081:8080"
+      - "50002:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
@@ -16,14 +18,14 @@ services:
   mongodb:
     image: mongo:latest
     ports:
-      - "27017:27017"
+      - "27019:27017"
     volumes:
       - mongodb_data:/data/db
 
   backend:
     build: ./backend
     ports:
-      - "5001:5000"
+      - "5002:5000"
     environment:
       - FLASK_ENV=production
       - MONGODB_URI=mongodb://mongodb:27017/ims_pro
@@ -33,13 +35,12 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "80:80"
+      - "3000:80"
     depends_on:
       - backend
 
   prometheus:
     image: prom/prometheus:v2.51.0
-    container_name: prometheus
     ports:
       - "9095:9090"
     volumes:
@@ -56,7 +57,6 @@ services:
 
   grafana:
     image: grafana/grafana:10.4.1
-    container_name: grafana
     ports:
       - "3005:3000"
     volumes:
@@ -67,12 +67,11 @@ services:
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.49.1
-    container_name: cadvisor
     privileged: true
     devices:
       - /dev/kmsg
     ports:
-      - "8089:8080"
+      - "8090:8080"
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
@@ -83,10 +82,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
 
-
 volumes:
   mongodb_data:
   jenkins_home:
   prometheus_data:
   grafana_data:
-
