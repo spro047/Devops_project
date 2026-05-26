@@ -16,9 +16,9 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh 'docker compose build'
+                        sh 'docker compose build --no-cache'
                     } else {
-                        bat 'docker compose build'
+                        bat 'docker compose build --no-cache'
                     }
                 }
             }
