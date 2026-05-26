@@ -13,6 +13,8 @@ export const API_BASE_URL = (() => {
     backendPort = '5000'; // local vite dev -> local flask dev
   } else if (port === '8080') {
     backendPort = '5001';
+  } else if (port === '5000') {
+    backendPort = '5001';
   } else if (port === '') {
     backendPort = '5001';
   }
