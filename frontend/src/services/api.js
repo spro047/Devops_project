@@ -14,7 +14,7 @@ export const API_BASE_URL = (() => {
   } else if (port === '8080') {
     backendPort = '5000';
   } else if (port === '') {
-    backendPort = '5000';
+    backendPort = '5002';
   }
 
   return hostname === 'localhost' || hostname === '127.0.0.1'
