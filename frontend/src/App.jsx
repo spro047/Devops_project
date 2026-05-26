@@ -82,21 +82,8 @@ function App() {
         return <ShipmentTracking trackingId={trackingId} onBack={() => setView('dashboard')} />;
       case 'helloworld':
         return (
-          <div className="glass-card fade-in" style={{ textAlign: 'center', padding: '6rem 2rem', marginTop: '2rem' }}>
-            <h1 style={{ 
-              fontSize: '4.5rem', 
-              fontWeight: 800, 
-              background: 'linear-gradient(135deg, var(--primary), var(--secondary))', 
-              WebkitBackgroundClip: 'text', 
-              WebkitTextFillColor: 'transparent', 
-              marginBottom: '1.5rem',
-              letterSpacing: '-1px'
-            }}>
-              Hello World!
-            </h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '1.25rem', maxWidth: '600px', margin: '0 auto', lineHeight: '1.6' }}>
-              This page was successfully added, built, and deployed live automatically using the **Jenkins CI/CD Pipeline** to verify the DevOps deployment process.
-            </p>
+          <div style={{ textAlign: 'center', paddingTop: '5rem' }}>
+            <h1>Hello World</h1>
           </div>
         );
       case 'add':
