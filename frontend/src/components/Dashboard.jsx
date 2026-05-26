@@ -64,15 +64,6 @@ const Dashboard = ({ data, onRefresh, onTrack }) => {
         </button>
       </header>
 
-      {/* Hello World CI/CD Alert Banner */}
-      <div className="glass-card fade-in" style={{ background: 'rgba(99, 102, 241, 0.08)', borderColor: 'var(--primary)', marginBottom: '2rem', padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', borderRadius: '16px' }}>
-        <span style={{ fontSize: '1.8rem' }}>👋</span>
-        <div>
-          <h3 style={{ margin: 0, color: 'var(--primary)', fontWeight: 700, fontSize: '1.1rem' }}>Hello World!</h3>
-          <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem', color: 'var(--text-muted)' }}>This deployment was successfully built and updated live using the Jenkins CI/CD pipeline.</p>
-        </div>
-      </div>
-
       <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', margin: '2rem 0' }}>
         <StatCard title="Total Units" value={data?.total_stock || 0} />
         <StatCard title="Warehouse Capacity" value={`${data?.capacity_usage_percent || 0}% Full`} color={data?.capacity_usage_percent > 80 ? 'var(--danger)' : 'var(--success)'} />

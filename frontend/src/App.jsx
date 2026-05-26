@@ -82,8 +82,8 @@ function App() {
         return <ShipmentTracking trackingId={trackingId} onBack={() => setView('dashboard')} />;
       case 'helloworld':
         return (
-          <div style={{ textAlign: 'center', paddingTop: '5rem' }}>
-            <h1>Hello World</h1>
+          <div style={{ color: 'var(--text-main)', fontSize: '2rem', padding: '2rem' }}>
+            hello world
           </div>
         );
       case 'add':
