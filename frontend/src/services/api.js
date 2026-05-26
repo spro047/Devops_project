@@ -1,8 +1,26 @@
 import axios from 'axios';
 
-export const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://127.0.0.1:5001/api'
-  : `http://${window.location.hostname}:5001/api`;
+export const API_BASE_URL = (() => {
+  const hostname = window.location.hostname;
+  const port = window.location.port;
+
+  let backendPort = '5002'; // default for docker-compose
+  if (port === '3001') {
+    backendPort = '5001';
+  } else if (port === '3000') {
+    backendPort = '5002';
+  } else if (port === '5173') {
+    backendPort = '5000'; // local vite dev -> local flask dev
+  } else if (port === '8080') {
+    backendPort = '5000';
+  } else if (port === '') {
+    backendPort = '5000';
+  }
+
+  return hostname === 'localhost' || hostname === '127.0.0.1'
+    ? `http://127.0.0.1:${backendPort}/api`
+    : `http://${hostname}:${backendPort}/api`;
+})();
 
 const api = axios.create({
   baseURL: API_BASE_URL,
