@@ -40,11 +40,12 @@ services:
       - backend
 
   prometheus:
-    image: prom/prometheus:v2.51.0
+    build:
+      context: .
+      dockerfile: Dockerfile.prometheus
     ports:
       - "9095:9090"
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
