@@ -104,7 +104,7 @@ function App() {
           {renderView()}
         </div>
         <footer className="app-footer">
-          <p>&copy;  jekins test successfully done!!!! </p>
+          <p>&copy; IMS PRO server package delivary </p>
         </footer>
       </main>
     </div>
