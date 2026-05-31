@@ -104,7 +104,7 @@ function App() {
           {renderView()}
         </div>
         <footer className="app-footer">
-          <p>&copy;  FINAL REVIEW TEST 31 MAY 2026 </p>
+          <p>&copy;  jekins test successfully done!!!! </p>
         </footer>
       </main>
     </div>
