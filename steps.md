@@ -26,9 +26,9 @@ This is the easiest way to run the entire stack (Frontend, Backend, MongoDB, and
     docker compose up --build
     ```
 3.  **Access the applications**:
-    *   **Frontend UI**: [http://localhost](http://localhost) (Port 80)
-    *   **Backend API**: [http://localhost:5000](http://localhost:5000)
-    *   **Jenkins**: [http://localhost:8082](http://localhost:8082)
+    *   **Frontend UI**: [http://localhost:3000](http://localhost:3000)
+    *   **Backend API**: [http://localhost:5002](http://localhost:5002)
+    *   **Jenkins**: [http://localhost:8081](http://localhost:8081)
 
 ---
 
@@ -78,7 +78,7 @@ To use the built-in Jenkins pipeline:
     docker compose up jenkins
     ```
 2.  **Unlock Jenkins**:
-    *   Go to `http://localhost:8082`
+    *   Go to `http://localhost:8081`
     *   Get password: `docker compose exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword`
 3.  **Configure Pipeline**:
     *   Create a **New Item** -> **Pipeline**.

@@ -24,8 +24,8 @@ The easiest way to run the project locally. It sets up both the backend and fron
    docker compose up --build
    ```
 3. Access the application:
-   - **Frontend UI**: [http://localhost](http://localhost) (Port 80)
-   - **Backend API**: [http://localhost:5000](http://localhost:5000)
+   - **Frontend UI**: [http://localhost:3000](http://localhost:3000)
+   - **Backend API**: [http://localhost:5002](http://localhost:5002)
 
 ---
 
@@ -38,7 +38,7 @@ This project includes a Jenkins service in `docker-compose.yml` for CI/CD.
    docker compose up --build
    ```
 3. Open Jenkins at:
-   - `http://localhost:8082`
+   - `http://localhost:8081`
 4. To get the initial admin password, run:
    ```bash
    docker compose exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword

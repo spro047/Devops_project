@@ -16,7 +16,7 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh 'docker compose build --no-cache'
+                        sh 'sudo docker compose build --no-cache'
                     } else {
                         bat 'docker compose build --no-cache'
                     }
@@ -28,7 +28,7 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh 'docker compose up -d --force-recreate mongodb backend frontend prometheus grafana cadvisor'
+                        sh 'sudo docker compose up -d --force-recreate mongodb backend frontend prometheus grafana cadvisor'
                     } else {
                         bat 'docker compose up -d --force-recreate mongodb backend frontend prometheus grafana cadvisor'
                     }
@@ -40,7 +40,7 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh 'docker ps'
+                        sh 'sudo docker ps'
                     } else {
                         bat 'docker ps'
                     }
