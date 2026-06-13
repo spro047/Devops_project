@@ -104,7 +104,7 @@ function App() {
           {renderView()}
         </div>
         <footer className="app-footer">
-          <p>&copy; Appllication Final review</p>
+          <p>&copy; IMS PRO @ 2026</p>
         </footer>
       </main>
     </div>
