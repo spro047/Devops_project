@@ -32,16 +32,16 @@ const WarehouseModule = ({ onProcessQueue }) => {
 
   const fetchData = async () => {
     try {
-      const [sRes, pRes, qRes, lRes] = await Promise.all([
+      const [sRes, pRes, qRes, lRes] = await Promise.allSettled([
         getWarehouseStatus(),
         getProducts(),
         getDispatchQueue(),
         getTransactions()
       ]);
-      setStatus(sRes.data);
-      setProducts(pRes.data);
-      setQueue(qRes.data);
-      setLogs(lRes.data.filter(t => ['RECEIVE', 'DISPATCH', 'DAMAGE', 'ADJUST'].includes(t.type)).slice(0, 15));
+      if (sRes.status === 'fulfilled') setStatus(sRes.value.data);
+      if (pRes.status === 'fulfilled') setProducts(pRes.value.data);
+      if (qRes.status === 'fulfilled') setQueue(qRes.value.data);
+      if (lRes.status === 'fulfilled') setLogs(lRes.value.data.filter(t => ['RECEIVE', 'DISPATCH', 'DAMAGE', 'ADJUST'].includes(t.type)).slice(0, 15));
     } catch (err) {
       console.error(err);
     } finally {

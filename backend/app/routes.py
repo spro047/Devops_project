@@ -589,8 +589,13 @@ def direct_sell():
 @main.route('/api/dispatch/queue')
 def get_dispatch_queue():
     queue = DispatchQueue.objects.order_by('-priority', 'created_at').all()
-    return jsonify([
-        {
+    result = []
+    for q in queue:
+        try:
+            _ = q.product.name
+        except Exception:
+            continue
+        result.append({
             'id': str(q.id),
             'request_id': q.request_id,
             'product_name': q.product.name,
@@ -602,8 +607,8 @@ def get_dispatch_queue():
             'status': q.status,
             'created_at': q.created_at.isoformat(),
             'available_stock': q.product.quantity
-        } for q in queue
-    ])
+        })
+    return jsonify(result)
 
 @main.route('/api/dispatch/<string:request_id>', methods=['PUT'])
 def update_dispatch(request_id):
