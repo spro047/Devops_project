@@ -31,12 +31,12 @@ const InventoryChart = ({ products }) => {
         backgroundColor: products.map(p => 
           p.status === 'Out of Stock' ? 'rgba(239, 68, 68, 0.7)' : 
           p.status === 'Low Stock' ? 'rgba(245, 158, 11, 0.7)' : 
-          'rgba(99, 102, 241, 0.7)'
+          'rgba(37, 99, 235, 0.7)'
         ),
         borderColor: products.map(p => 
           p.status === 'Out of Stock' ? '#ef4444' : 
           p.status === 'Low Stock' ? '#f59e0b' : 
-          '#6366f1'
+          '#2563EB'
         ),
         borderWidth: 1,
         borderRadius: 8,

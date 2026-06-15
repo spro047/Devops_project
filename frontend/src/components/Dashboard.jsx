@@ -65,7 +65,7 @@ const Dashboard = ({ data, onRefresh, onTrack }) => {
       <div style={{ marginTop: '2.5rem' }}>
         <div className="glass-card" style={{ padding: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-            <div style={{ background: 'rgba(99, 102, 241, 0.1)', padding: '0.65rem', borderRadius: '10px', color: 'var(--primary)' }}>
+            <div style={{ background: 'var(--icon-bg)', padding: '0.65rem', borderRadius: '10px', color: 'var(--primary)' }}>
               <BarChart3 size={20} />
             </div>
             <h2 style={{ fontSize: '1.15rem' }}>Stock <span style={{ color: 'var(--primary)' }}>Distribution</span></h2>
@@ -141,7 +141,7 @@ const Dashboard = ({ data, onRefresh, onTrack }) => {
           alignItems: 'center',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div style={{ background: 'rgba(99, 102, 241, 0.1)', padding: '0.55rem', borderRadius: '10px', color: 'var(--primary)' }}>
+            <div style={{ background: 'var(--icon-bg)', padding: '0.55rem', borderRadius: '10px', color: 'var(--primary)' }}>
               <Package size={18} />
             </div>
             <h2 style={{ fontSize: '1.15rem' }}>Inventory <span style={{ color: 'var(--primary)' }}>Health</span></h2>

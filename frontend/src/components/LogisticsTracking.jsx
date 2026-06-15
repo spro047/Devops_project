@@ -46,7 +46,7 @@ const LogisticsTracking = ({ onBack }) => {
       <div className="glass-card" style={{ marginTop: '2rem', padding: '3rem', textAlign: 'center', overflow: 'hidden', position: 'relative', background: 'rgba(15, 23, 42, 0.4)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '800px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <div style={{ textAlign: 'center' }}>
-            <div className={loadingCount > 0 ? 'pulse-icon' : ''} style={{ background: 'var(--primary)', padding: '1.25rem', borderRadius: '50%', color: 'white', marginBottom: '0.75rem', boxShadow: '0 0 20px rgba(99, 102, 241, 0.4)', transition: 'all 0.3s ease' }}>
+            <div className={loadingCount > 0 ? 'pulse-icon' : ''} style={{ background: 'var(--primary)', padding: '1.25rem', borderRadius: '50%', color: 'white', marginBottom: '0.75rem', boxShadow: '0 0 20px rgba(96, 165, 250, 0.4)', transition: 'all 0.3s ease' }}>
               <Box size={32} />
             </div>
             <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Central Warehouse</div>
@@ -125,7 +125,7 @@ const LogisticsTracking = ({ onBack }) => {
           }}>
             {/* Warehouse Marker */}
             <div style={{ position: 'absolute', top: '50%', left: '15%', color: 'var(--primary)', textAlign: 'center' }}>
-              <div style={{ background: 'rgba(99, 102, 241, 0.2)', padding: '8px', borderRadius: '8px', border: '1px solid var(--primary)' }}>
+              <div style={{ background: 'var(--icon-bg)', padding: '8px', borderRadius: '8px', border: '1px solid var(--primary)' }}>
                 <Box size={20} />
               </div>
               <div style={{ fontSize: '0.6rem', fontWeight: 800, marginTop: '4px' }}>WH-MAIN</div>
@@ -221,7 +221,7 @@ const LogisticsTracking = ({ onBack }) => {
                {['M','T','W','T','F','S','S'].map((day, i) => (
                   <div key={i} style={{ flex: 1, textAlign: 'center' }}>
                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>{day}</div>
-                     <div style={{ height: '60px', background: i === 2 ? 'rgba(99, 102, 241, 0.2)' : 'rgba(255,255,255,0.02)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, border: i === 2 ? '1px solid var(--primary)' : '1px solid var(--border)' }}>
+                     <div style={{ height: '60px', background: i === 2 ? 'var(--icon-bg)' : 'rgba(255,255,255,0.02)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, border: i === 2 ? '1px solid var(--primary)' : '1px solid var(--border)' }}>
                         {i === 2 ? activeDeliveries.length + completedDeliveries.length : 0}
                      </div>
                   </div>
@@ -235,7 +235,7 @@ const LogisticsTracking = ({ onBack }) => {
         .fleet-marker { animation: floatTruck 3s ease-in-out infinite; }
         @keyframes movePath { from { background-position: 0 0; } to { background-position: 40px 0; } }
         @keyframes floatTruck { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-        @keyframes pulse-icon { 0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(99, 102, 241, 0); } 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); } }
+        @keyframes pulse-icon { 0% { box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(96, 165, 250, 0); } 100% { box-shadow: 0 0 0 0 rgba(96, 165, 250, 0); } }
         @keyframes pulse-success { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
         .pulse-icon { animation: pulse-icon 2s infinite; }
         .pulse-success { animation: pulse-success 2s infinite; }

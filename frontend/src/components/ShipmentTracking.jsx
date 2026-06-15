@@ -259,7 +259,7 @@ const ShipmentTracking = ({ trackingId, onBack }) => {
                 <h3 style={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                    <Navigation size={18} color="var(--primary)" /> Real-Time Satellite Map
                 </h3>
-                <span style={{ fontSize: '0.7rem', color: 'var(--primary)', background: 'rgba(99, 102, 241, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>LIVE GPS</span>
+                <span style={{ fontSize: '0.7rem', color: 'var(--primary)', background: 'var(--icon-bg)', padding: '2px 8px', borderRadius: '4px' }}>LIVE GPS</span>
              </div>
              <div id="map-container" style={{ width: '100%', height: '400px', borderRadius: '12px' }}></div>
           </div>

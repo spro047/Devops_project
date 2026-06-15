@@ -87,7 +87,7 @@ const ProductCatalog = () => {
                   <td><code>{product.sku}</code></td>
                   <td>{product.name}</td>
                   <td>{product.category}</td>
-                  <td><span className="badge" style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--primary)' }}>{product.zone}</span></td>
+                  <td><span className="badge" style={{ background: 'var(--icon-bg)', color: 'var(--primary)' }}>{product.zone}</span></td>
                   <td style={{ 
                     color: product.status === 'Out of Stock' ? 'var(--danger)' : product.status === 'Low Stock' ? 'var(--warning)' : 'inherit',
                     fontWeight: product.status === 'Out of Stock' ? 'bold' : 'normal'

@@ -151,7 +151,7 @@ const WarehouseModule = ({ onProcessQueue }) => {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginTop: '2.5rem' }}>
         <div className="glass-card" style={{ padding: '2rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-            <div style={{ background: 'rgba(99, 102, 241, 0.1)', padding: '0.75rem', borderRadius: '12px', color: 'var(--primary)' }}>
+            <div style={{ background: 'var(--icon-bg)', padding: '0.75rem', borderRadius: '12px', color: 'var(--primary)' }}>
               <Package size={24} />
             </div>
             <h2 style={{ fontSize: '1.25rem' }}>Warehouse Capacity</h2>

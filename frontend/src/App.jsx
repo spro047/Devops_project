@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import Navbar from './components/Navbar';
+import { Sun, Moon } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import ProductCatalog from './components/ProductCatalog';
 import AddProduct from './components/AddProduct';
@@ -17,6 +18,7 @@ function App() {
   const [trackingId, setTrackingId] = useState('');
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [dark, setDark] = useState(() => localStorage.getItem('ims-theme') === 'dark');
 
   const refreshData = async () => {
     try {
@@ -35,6 +37,11 @@ function App() {
     window.addEventListener('nav-logistics', handleNavLogistics);
     return () => window.removeEventListener('nav-logistics', handleNavLogistics);
   }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    localStorage.setItem('ims-theme', dark ? 'dark' : 'light');
+  }, [dark]);
 
   const renderView = () => {
     if (loading) return (
@@ -94,6 +101,9 @@ function App() {
     <div className="app-layout">
       <Navbar onNavigate={setView} currentView={view} />
       <main className="main-content-area">
+        <button className="theme-toggle" onClick={() => setDark(p => !p)} title={dark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
+          {dark ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
         <div className="container slide-in">
           {renderView()}
         </div>

@@ -5,6 +5,7 @@
   overflow: hidden;
   background-color: var(--surface);
   position: relative;
+  transition: background-color 0.3s ease;
 }
 
 .main-content-area {
@@ -16,6 +17,30 @@
   animation: fadeIn 0.35s ease-out;
   margin-left: var(--sidebar-width);
   padding: 2rem;
+  position: relative;
+}
+
+.theme-toggle {
+  position: absolute;
+  top: 1rem;
+  right: 1.5rem;
+  z-index: 500;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.theme-toggle:hover {
+  border-color: var(--text-muted);
+  color: var(--text-heading);
 }
 
 .app-footer {

@@ -46,7 +46,7 @@ const AddProduct = ({ onSuccess, onCancel }) => {
           {/* Product Information */}
           <div style={{ marginBottom: '2rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-              <div style={{ background: 'rgba(99, 102, 241, 0.1)', padding: '0.6rem', borderRadius: '10px', color: 'var(--primary)' }}>
+              <div style={{ background: 'var(--icon-bg)', padding: '0.6rem', borderRadius: '10px', color: 'var(--primary)' }}>
                 <Package size={18} />
               </div>
               <h2 style={{ fontSize: '1.15rem' }}>Product <span style={{ color: 'var(--primary)' }}>Information</span></h2>
@@ -145,7 +145,7 @@ const AddProduct = ({ onSuccess, onCancel }) => {
             background: 'var(--surface)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
-              <div style={{ background: 'rgba(99, 102, 241, 0.1)', padding: '0.6rem', borderRadius: '10px', color: 'var(--primary)' }}>
+              <div style={{ background: 'var(--icon-bg)', padding: '0.6rem', borderRadius: '10px', color: 'var(--primary)' }}>
                 <MapPin size={18} />
               </div>
               <h2 style={{ fontSize: '1.15rem' }}>Warehouse <span style={{ color: 'var(--primary)' }}>Assignment</span></h2>

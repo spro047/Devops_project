@@ -1,22 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  /* Palette — warehouse safety × editorial */
-  --primary: #1D4ED8;
-  --primary-hover: #1E40AF;
+  /* Palette — white & blue */
+  --primary: #2563EB;
+  --primary-hover: #1D4ED8;
   --primary-light: #DBEAFE;
-  --surface: #F4F6F9;
+  --icon-bg: rgba(37, 99, 235, 0.1);
+  --surface: #F8FAFC;
   --card-bg: #FFFFFF;
   --border: #E2E8F0;
   --text-heading: #0F172A;
   --text-body: #334155;
   --text-muted: #64748B;
   --text-on-primary: #FFFFFF;
-  --success: #059669;
+  --success: #10B981;
   --success-bg: #D1FAE5;
   --warning: #F59E0B;
   --warning-bg: #FEF3C7;
-  --danger: #DC2626;
+  --danger: #EF4444;
   --danger-bg: #FEE2E2;
   --safety-yellow: #FCD34D;
 
@@ -25,6 +26,120 @@
   --radius-sm: 8px;
   --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   --transition: all 0.2s ease;
+}
+
+[data-theme="dark"] {
+  --primary: #60A5FA;
+  --primary-hover: #3B82F6;
+  --primary-light: #1E293B;
+  --icon-bg: rgba(96, 165, 250, 0.12);
+  --surface: #0A0A0A;
+  --card-bg: #141414;
+  --border: #2A2A2A;
+  --text-heading: #E5E5E5;
+  --text-body: #A3A3A3;
+  --text-muted: #6B7280;
+  --text-on-primary: #0A0A0A;
+  --success: #34D399;
+  --success-bg: #1A2E24;
+  --warning: #FBBF24;
+  --warning-bg: #2D2815;
+  --danger: #F87171;
+  --danger-bg: #2D1B1B;
+  --safety-yellow: #FCD34D;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+}
+
+[data-theme="dark"] .badge-success {
+  background: #1A2E24;
+  color: #6EE7B7;
+  border: 1px solid #2D5A44;
+}
+
+[data-theme="dark"] .badge-warning {
+  background: #2D2815;
+  color: #FCD34D;
+  border: 1px solid #5C4A1A;
+}
+
+[data-theme="dark"] .badge-danger {
+  background: #2D1B1B;
+  color: #FCA5A5;
+  border: 1px solid #5C2A2A;
+}
+
+[data-theme="dark"] .badge-primary {
+  background: #1E293B;
+  color: #93C5FD;
+  border: 1px solid #2D4A6B;
+}
+
+[data-theme="dark"] .card:hover {
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .glass-card:hover {
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .btn:hover {
+  border-color: var(--text-muted);
+  color: var(--text-heading);
+}
+
+[data-theme="dark"] .btn-primary {
+  background: var(--primary);
+  color: var(--text-on-primary);
+  border-color: var(--primary);
+}
+
+[data-theme="dark"] .btn-primary:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  color: #FFFFFF;
+}
+
+[data-theme="dark"] input:focus, [data-theme="dark"] select:focus, [data-theme="dark"] textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.2);
+}
+
+[data-theme="dark"] .nav-links button:hover {
+  color: var(--text-heading);
+  background: var(--primary-light);
+}
+
+[data-theme="dark"] .nav-links button.active,
+[data-theme="dark"] .nav-links button[class*="active"] {
+  color: var(--text-heading);
+  background: var(--primary-light);
+}
+
+[data-theme="dark"] .nav-links button:hover svg {
+  color: var(--text-heading);
+}
+
+[data-theme="dark"] .nav-links button.active svg {
+  color: var(--text-heading);
+}
+
+[data-theme="dark"] .nav-links button {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .nav-links button svg {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .alert-warning {
+  background: #1E293B;
+  border-color: #2D4A6B;
+  color: var(--text-body);
+}
+
+[data-theme="dark"] select option {
+  background: #141414;
+  color: var(--text-body);
 }
 
 * {
@@ -44,7 +159,10 @@ body {
   line-height: 1.6;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+
 
 h1, h2, h3, h4, h5, h6 {
   color: var(--text-heading);
@@ -142,6 +260,12 @@ code {
   background: var(--danger-bg);
   color: var(--danger);
   border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.badge-primary {
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid rgba(37, 99, 235, 0.2);
 }
 
 /* Inputs */
