@@ -168,28 +168,28 @@ const Dashboard = ({ data, onRefresh, onTrack }) => {
                     )}
                   </td>
                   <td>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', minWidth: '280px' }}>
                       <input 
                         type="number" 
                         placeholder="Qty" 
                         min="1"
-                        style={{ width: '70px', padding: '0.4rem' }}
+                        style={{ width: '80px', padding: '0.5rem', textAlign: 'center', flexShrink: 0 }}
                         value={adjustments[product.id]?.amount || ''}
                         onChange={(e) => updateAdj(product.id, 'amount', e.target.value)}
                       />
                       <select 
-                        style={{ width: '70px', padding: '0.4rem' }}
+                        style={{ flex: 1, minWidth: '110px', padding: '0.5rem', textAlign: 'center' }}
                         value={adjustments[product.id]?.type || 'IN'}
                         onChange={(e) => updateAdj(product.id, 'type', e.target.value)}
                       >
-                        <option value="IN">RESTOCK (IN)</option>
-                        <option value="OUT">WASTE (OUT)</option>
+                        <option value="IN">RESTOCK</option>
+                        <option value="OUT">WASTE</option>
                         <option value="SELL">SELL</option>
                       </select>
                       <button 
                         onClick={() => handleAdjust(product)}
                         className="btn btn-primary" 
-                        style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
+                        style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', whiteSpace: 'nowrap', flexShrink: 0 }}
                       >
                         Update
                       </button>

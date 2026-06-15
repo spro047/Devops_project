@@ -80,12 +80,6 @@ function App() {
         return <LogisticsTracking onBack={() => setView('dispatch')} />;
       case 'tracking':
         return <ShipmentTracking trackingId={trackingId} onBack={() => setView('dashboard')} />;
-      case 'helloworld':
-        return (
-          <div style={{ color: 'var(--text-main)', fontSize: '2rem', padding: '2rem' }}>
-            hello world
-          </div>
-        );
       case 'add':
         return <AddProduct
           onSuccess={() => { setView('dashboard'); refreshData(); }}
