@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import StatCard from './StatCard';
 import InventoryChart from './InventoryChart';
-import api, { adjustInventory } from '../services/api';
-import { RefreshCcw } from 'lucide-react';
+import api from '../services/api';
+import { BarChart3, MapPin, Package } from 'lucide-react';
 
 const Dashboard = ({ data, onRefresh, onTrack }) => {
   const [adjustments, setAdjustments] = useState({});
@@ -13,28 +13,16 @@ const Dashboard = ({ data, onRefresh, onTrack }) => {
     if (!adj || !adj.amount) return;
 
     try {
-      const payload = {
-        sku: product.sku,
-        quantity: parseInt(adj.amount)
-      };
+      const payload = { sku: product.sku, quantity: parseInt(adj.amount) };
 
       if (adj.type === 'SELL') {
-        // Use direct sell for immediate dashboard updates
         await api.post('/sell', payload);
       } else if (adj.type === 'OUT') {
-        // WASTE (OUT) uses the damage endpoint
-        await api.post('/damage', {
-          ...payload,
-          notes: 'Manual waste recording from dashboard'
-        });
+        await api.post('/damage', { ...payload, notes: 'Manual waste from dashboard' });
       } else {
-        // RESTOCK (IN) uses the receive endpoint
-        await api.post('/receive', {
-          ...payload,
-          supplier: 'Express Restock'
-        });
+        await api.post('/receive', { ...payload, supplier: 'Express Restock' });
       }
-      
+
       onRefresh();
       setAdjustments({ ...adjustments, [product.id]: { amount: '', type: 'IN' } });
     } catch (err) {
@@ -45,101 +33,122 @@ const Dashboard = ({ data, onRefresh, onTrack }) => {
   const updateAdj = (productId, field, value) => {
     setAdjustments({
       ...adjustments,
-      [productId]: { ...adjustments[productId], [field]: value }
+      [productId]: { ...adjustments[productId], [field]: value },
     });
   };
 
+  const capacityHealth = data?.capacity_usage_percent > 80 ? 'critical' : data?.capacity_usage_percent > 60 ? 'warning' : 'healthy';
+  const lowStockHealth = data?.low_stock_count > 0 ? 'warning' : 'healthy';
+  const outOfStockHealth = data?.out_of_stock_count > 0 ? 'critical' : 'healthy';
+
   return (
-    <div className="container" style={{ paddingTop: '2rem' }}>
-      <header style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1 style={{ fontSize: '2.2rem', fontWeight: 700, margin: 0 }}>
-            Dashboard <span style={{ color: 'var(--primary)' }}>Overview</span>
-          </h1>
-          <p style={{ color: 'var(--text-muted)', margin: '0.25rem 0 0 0' }}>Real-time inventory and logistics monitoring</p>
-        </div>
-        <button onClick={onRefresh} className="btn" style={{ background: 'var(--bg-sidebar)', border: '1px solid var(--border)', color: 'var(--primary)' }}>
-          <RefreshCcw size={18} />
-          <span>Sync Data</span>
-        </button>
+    <div className="container">
+      <header style={{ marginTop: '2rem' }}>
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 600 }}>Dashboard <span style={{ color: 'var(--primary)' }}>Overview</span></h1>
+        <p style={{ color: 'var(--text-muted)' }}>Real-time inventory and warehouse monitoring.</p>
       </header>
 
-      <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', margin: '2rem 0' }}>
-        <StatCard title="Total Units" value={data?.total_stock || 0} />
-        <StatCard title="Warehouse Capacity" value={`${data?.capacity_usage_percent || 0}% Full`} color={data?.capacity_usage_percent > 80 ? 'var(--danger)' : 'var(--success)'} />
-        <StatCard 
-          title="Low Stock Alerts" 
-          value={data?.low_stock_count || 0} 
-          color={data?.low_stock_count > 0 ? 'var(--warning)' : 'var(--success)'} 
-        />
-        <StatCard 
-          title="Out of Stock" 
-          value={data?.out_of_stock_count || 0} 
-          color={data?.out_of_stock_count > 0 ? 'var(--danger)' : 'var(--success)'} 
-        />
+      {/* KPI Safety Band Cards */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '1rem',
+        marginTop: '2.5rem',
+      }}>
+        <StatCard title="Total Units" value={data?.total_stock?.toLocaleString() || '0'} health="healthy" />
+        <StatCard title="Warehouse Capacity" value={`${data?.capacity_usage_percent || 0}%`} health={capacityHealth} />
+        <StatCard title="Low Stock" value={data?.low_stock_count || 0} health={lowStockHealth} />
+        <StatCard title="Out of Stock" value={data?.out_of_stock_count || 0} health={outOfStockHealth} />
       </div>
 
-      {/* NEW: Tracking Search Section */}
-      <div className="glass-card slide-in" style={{ marginBottom: '2rem', background: 'var(--primary-light)', border: 'none' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '2rem', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: '300px' }}>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--primary)', marginBottom: '0.25rem' }}>Track Shipment</h2>
-            <p style={{ color: 'var(--text-main)', opacity: 0.7, fontSize: '0.9rem', margin: 0 }}>Monitor real-time movement and delivery status</p>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: 1, maxWidth: '400px' }}>
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <input 
-                type="text" 
-                placeholder="e.g. DEMO-777" 
-                value={trackInput}
-                onChange={(e) => setTrackInput(e.target.value.toUpperCase())}
-                style={{ flex: 1, padding: '0.75rem' }}
-                onKeyDown={(e) => { if(e.key === 'Enter') onTrack(trackInput) }}
-              />
-              <button 
-                className="btn btn-primary" 
-                style={{ padding: '0 1.5rem' }}
-                onClick={() => onTrack(trackInput)}
-              >
-                Track
-              </button>
+      {/* Stock Distribution */}
+      <div style={{ marginTop: '2.5rem' }}>
+        <div className="glass-card" style={{ padding: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div style={{ background: 'rgba(99, 102, 241, 0.1)', padding: '0.65rem', borderRadius: '10px', color: 'var(--primary)' }}>
+              <BarChart3 size={20} />
             </div>
-            {/* Suggested IDs */}
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <span>Recent IDs:</span>
-              <button 
-                onClick={() => onTrack('DEMO-777')}
-                style={{ background: 'var(--primary)', border: 'none', color: 'white', cursor: 'pointer', padding: '2px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 600 }}
-              >
-                DEMO-777
-              </button>
-              {data?.recent_transactions?.filter(t => t.type === 'DISPATCH' && t.notes.includes('Req:')).slice(0, 2).map(t => {
-                const match = t.notes.match(/Req: (.*)\)/);
-                const trackingId = match ? match[1] : null;
-                if (!trackingId) return null;
-                return (
-                  <button 
-                    key={t.id}
-                    onClick={() => onTrack(trackingId)}
-                    style={{ background: 'var(--primary-light)', border: '1px solid var(--primary)', color: 'var(--primary)', cursor: 'pointer', padding: '2px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 600 }}
-                  >
-                    {trackingId}
-                  </button>
-                );
-              })}
-            </div>
+            <h2 style={{ fontSize: '1.15rem' }}>Stock <span style={{ color: 'var(--primary)' }}>Distribution</span></h2>
           </div>
+          <InventoryChart products={data?.recent_products} />
         </div>
       </div>
 
-      <div className="glass-card" style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Stock Distribution</h2>
-        <InventoryChart products={data?.recent_products} />
+      {/* Track Shipment */}
+      <div className="glass-card" style={{
+        marginTop: '2.5rem',
+        padding: '1.25rem 1.5rem',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '1rem',
+        flexWrap: 'wrap',
+        background: 'var(--primary-light)',
+        borderColor: 'var(--primary)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
+          <MapPin size={18} color="var(--primary)" />
+          <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--primary)' }}>Track Shipment</span>
+        </div>
+        <input
+          type="text"
+          placeholder="Enter tracking ID (e.g. DEMO-777)"
+          value={trackInput}
+          onChange={(e) => setTrackInput(e.target.value.toUpperCase())}
+          onKeyDown={(e) => { if (e.key === 'Enter') onTrack(trackInput); }}
+          style={{ flex: 1, minWidth: '200px', padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
+        />
+        <button
+          className="btn btn-primary"
+          style={{ padding: '0.5rem 1.25rem', flexShrink: 0 }}
+          onClick={() => onTrack(trackInput)}
+        >
+          Track
+        </button>
+        {data?.recent_transactions?.filter(t => t.type === 'DISPATCH' && t.notes.includes('Req:')).slice(0, 2).map(t => {
+          const match = t.notes.match(/Req: (.*)\)/);
+          const id = match ? match[1] : null;
+          if (!id) return null;
+          return (
+            <button
+              key={t.id}
+              onClick={() => onTrack(id)}
+              style={{
+                background: 'transparent',
+                border: '1px solid var(--primary)',
+                color: 'var(--primary)',
+                cursor: 'pointer',
+                padding: '0.3rem 0.6rem',
+                borderRadius: '6px',
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                fontFamily: "'JetBrains Mono', monospace",
+                flexShrink: 0,
+              }}
+            >
+              {id}
+            </button>
+          );
+        })}
       </div>
 
-      <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontSize: '1.25rem' }}>Recent Inventory Health</h2>
+      {/* Inventory Health */}
+      <div className="glass-card" style={{ padding: 0, overflow: 'hidden', marginTop: '2.5rem' }}>
+        <div style={{
+          padding: '1.25rem 1.5rem',
+          borderBottom: '1px solid var(--border)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ background: 'rgba(99, 102, 241, 0.1)', padding: '0.55rem', borderRadius: '10px', color: 'var(--primary)' }}>
+              <Package size={18} />
+            </div>
+            <h2 style={{ fontSize: '1.15rem' }}>Inventory <span style={{ color: 'var(--primary)' }}>Health</span></h2>
+          </div>
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontFamily: "'JetBrains Mono', monospace", fontWeight: 500 }}>
+            {data?.total_items || 0} items
+          </span>
         </div>
         <div style={{ overflowX: 'auto' }}>
           <table>
@@ -155,30 +164,51 @@ const Dashboard = ({ data, onRefresh, onTrack }) => {
             <tbody>
               {data?.recent_products?.map(product => (
                 <tr key={product.id}>
-                  <td><code style={{ background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px' }}>{product.sku}</code></td>
-                  <td>{product.name}</td>
-                  <td>{product.quantity}</td>
+                  <td>
+                    <code style={{
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontSize: '0.8rem',
+                      background: 'var(--surface)',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                    }}>
+                      {product.sku}
+                    </code>
+                  </td>
+                  <td style={{ fontWeight: 500 }}>{product.name}</td>
+                  <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.875rem' }}>{product.quantity}</td>
                   <td>
                     {product.status === 'Out of Stock' ? (
-                      <span className="badge badge-danger">🔴 {product.status}</span>
+                      <span className="badge badge-danger">{product.status}</span>
                     ) : product.status === 'Low Stock' ? (
-                      <span className="badge badge-warning">🟡 {product.status}</span>
+                      <span className="badge badge-warning">{product.status}</span>
                     ) : (
-                      <span className="badge badge-success">🟢 {product.status}</span>
+                      <span className="badge badge-success">{product.status}</span>
                     )}
                   </td>
                   <td>
-                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', minWidth: '280px' }}>
-                      <input 
-                        type="number" 
-                        placeholder="Qty" 
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <input
+                        type="number"
+                        placeholder="Qty"
                         min="1"
-                        style={{ width: '80px', padding: '0.5rem', textAlign: 'center', flexShrink: 0 }}
+                        style={{
+                          width: '68px',
+                          padding: '0.4rem 0.5rem',
+                          fontSize: '0.8rem',
+                          textAlign: 'center',
+                          fontFamily: "'JetBrains Mono', monospace",
+                        }}
                         value={adjustments[product.id]?.amount || ''}
                         onChange={(e) => updateAdj(product.id, 'amount', e.target.value)}
                       />
-                      <select 
-                        style={{ flex: 1, minWidth: '110px', padding: '0.5rem', textAlign: 'center' }}
+                      <select
+                        style={{
+                          width: '105px',
+                          padding: '0.4rem 0.5rem',
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                        }}
                         value={adjustments[product.id]?.type || 'IN'}
                         onChange={(e) => updateAdj(product.id, 'type', e.target.value)}
                       >
@@ -186,10 +216,10 @@ const Dashboard = ({ data, onRefresh, onTrack }) => {
                         <option value="OUT">WASTE</option>
                         <option value="SELL">SELL</option>
                       </select>
-                      <button 
+                      <button
                         onClick={() => handleAdjust(product)}
-                        className="btn btn-primary" 
-                        style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', whiteSpace: 'nowrap', flexShrink: 0 }}
+                        className="btn btn-primary"
+                        style={{ padding: '0.4rem 0.85rem', fontSize: '0.75rem', fontWeight: 600 }}
                       >
                         Update
                       </button>
@@ -199,8 +229,8 @@ const Dashboard = ({ data, onRefresh, onTrack }) => {
               ))}
               {(!data?.recent_products || data.recent_products.length === 0) && (
                 <tr>
-                  <td colSpan="5" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                    No products found. Start by adding one!
+                  <td colSpan="5" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+                    No products yet. Add your first item to get started.
                   </td>
                 </tr>
               )}
